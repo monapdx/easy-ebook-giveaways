@@ -4,6 +4,8 @@
 
 This document captures the major milestones and technical progress made while building the Ebook Giveaway App — a platform for self-published authors to create, host, and deliver free ebook giveaways without relying on third-party email marketing tools.
 
+[![Diagrams](https://img.shields.io/badge/%F0%9F%93%89Diagrams-111111?style=for-the-badge)](#) [![Author Journey](https://img.shields.io/badge/%F0%9F%93%9DAuthor%20Journey-111111?style=for-the-badge)](#) [![Reader Journey](https://img.shields.io/badge/%F0%9F%93%96Reader%20Journey-111111?style=for-the-badge)](#) 
+
 ---
 
 ## 🚀 Phase 1: Foundation Setup
