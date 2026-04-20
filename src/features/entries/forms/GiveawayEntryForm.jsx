@@ -41,45 +41,54 @@ export default function GiveawayEntryForm({ campaignId }) {
       setSubmitting(false);
     }
   }
+return (
+    <section id="cta" className="cta-section">
+      <Card>
+        <form onSubmit={handleSubmit} className="stack form-enhanced">
+          <div className="stack-sm">
+            <h2 className="cta-title">Get your free ebook</h2>
+            <p className="muted">Instant download. No spam. Unsubscribe anytime.</p>
+          </div>
 
-  return (
-    <Card>
-      <form onSubmit={handleSubmit} className="stack">
-        <h2>Get the free ebook</h2>
-
-        <Input
-          label="Name"
-          name="name"
-          value={form.name}
-          onChange={updateField}
-          placeholder="Your name"
-        />
-
-        <Input
-          label="Email"
-          name="email"
-          type="email"
-          value={form.email}
-          onChange={updateField}
-          placeholder="you@example.com"
-        />
-
-        <label className="checkbox-row">
-          <input
-            type="checkbox"
-            name="consentNewsletter"
-            checked={form.consentNewsletter}
+          <Input
+            label="Name"
+            name="name"
+            value={form.name}
             onChange={updateField}
+            placeholder="Your name"
           />
-          <span>I want to receive updates and future book news.</span>
-        </label>
 
-        {error ? <p>{error}</p> : null}
+          <Input
+            label="Email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={updateField}
+            placeholder="you@example.com"
+          />
 
-        <Button type="submit">
-          {submitting ? 'Submitting...' : 'Send me the ebook'}
-        </Button>
-      </form>
-    </Card>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              name="consentNewsletter"
+              checked={form.consentNewsletter}
+              onChange={updateField}
+            />
+            <span>Send me updates and future book releases</span>
+          </label>
+
+          {error ? <p className="form-error">{error}</p> : null}
+
+          <Button type="submit" className="btn-lg">
+            {submitting ? 'Sending...' : 'Get Instant Access'}
+          </Button>
+
+          {/* trust booster */}
+          <p className="form-footnote">
+            📩 Delivered instantly to your inbox
+          </p>
+        </form>
+      </Card>
+    </section>
   );
 }

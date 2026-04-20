@@ -287,6 +287,106 @@ select {
   border-bottom: 1px solid var(--border);
 }
 
+/* Issue #9 CSS fixes */
+
+/* =========================
+   SPACING UPGRADE
+========================= */
+.stack-xl {
+  display: grid;
+  gap: 40px;
+}
+
+/* =========================
+   HERO IMPROVEMENT
+========================= */
+.hero-enhanced {
+  padding: 32px;
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.hero-desc {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 600px;
+}
+
+/* =========================
+   CTA SECTION (MAIN FOCUS)
+========================= */
+.cta-section {
+  background: linear-gradient(
+    135deg,
+    rgba(217, 70, 239, 0.15),
+    rgba(244, 114, 182, 0.1)
+  );
+  border: 1px solid rgba(217, 70, 239, 0.4);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(217, 70, 239, 0.15);
+}
+
+/* =========================
+   BOOK SECTION IMPROVEMENT
+========================= */
+.book-section.enhanced {
+  align-items: center;
+}
+
+.book-points {
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-weight: 700;
+}
+
+h2 {
+  font-weight: 600;
+}
+
+/* =========================
+   BUTTON UPGRADE
+========================= */
+.btn-lg {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 900px) {
   .dashboard-shell {
     grid-template-columns: 1fr;

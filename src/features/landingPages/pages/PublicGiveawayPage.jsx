@@ -62,10 +62,13 @@ export default function PublicGiveawayPage() {
   }
 
   return (
-    <div className="public-page stack-lg">
+    <div className="public-page stack-xl">
       <GiveawayHero campaign={campaign} />
-      <GiveawayBookSection campaign={campaign} />
+
+      {/* CTA moved up */}
       <GiveawayEntryForm campaignId={campaign.id} />
+
+      <GiveawayBookSection campaign={campaign} />
       <GiveawayAuthorSection campaign={campaign} />
     </div>
   );
