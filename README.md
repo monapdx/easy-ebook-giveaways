@@ -1,8 +1,8 @@
 # 📚 Ebook Giveaway App
 
-## 🧭 Overview
-
-This document captures the major milestones and technical progress made while building the Ebook Giveaway App — a platform for self-published authors to create, host, and deliver free ebook giveaways without relying on third-party email marketing tools.
+| Logo | Description |
+|---|---|
+| <img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/logo.png" width="354"> | This document captures the major milestones and technical progress made while building the Ebook Giveaway App — a platform for self-published authors to create, host, and deliver free ebook giveaways without relying on third-party email marketing tools. |
 
 ## Pages
 
