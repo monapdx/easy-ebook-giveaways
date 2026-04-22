@@ -44,11 +44,7 @@ export async function getEbookByCampaign(campaignId) {
     throw error;
   }
 
-  if (!data) {
-    throw new Error('No ebook found for this campaign.');
-  }
-
-  return data;
+  return data ?? null;
 }
 
 export async function getEbookById(ebookId) {

@@ -4,7 +4,7 @@ import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import { uploadEbook } from '../services/ebookService';
 
-export default function EbookUploadForm({ campaignId }) {
+export default function EbookUploadForm({ campaignId, onUploadComplete }) {
   const [form, setForm] = useState({
     bookTitle: '',
     cover: null,
@@ -45,6 +45,7 @@ export default function EbookUploadForm({ campaignId }) {
       });
 
       setMessage(`Uploaded: ${uploaded.title}`);
+      onUploadComplete?.(uploaded);
       setForm({
         bookTitle: '',
         cover: null,
