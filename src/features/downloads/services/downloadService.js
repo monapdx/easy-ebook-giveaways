@@ -51,40 +51,18 @@ export async function createDownloadToken({ campaignId, entryId }) {
   return data.token;
 }
 
-export async function getValidDownloadToken(token) {
-  const { data, error } = await supabase
-    .from('download_tokens')
-    .select('*')
-    .eq('token', token)
-    .single();
+export async function resolveDownload(token) {
+  const { data, error } = await supabase.functions.invoke('resolve-download', {
+    body: { token }
+  });
 
   if (error) {
-    throw error;
+    throw new Error(error.message || 'Failed to resolve download.');
   }
 
-  const now = new Date();
-  const expiresAt = new Date(data.expires_at);
-
-  if (expiresAt < now) {
-    throw new Error('This download link has expired.');
-  }
-
-  if (data.download_count >= data.max_downloads) {
-    throw new Error('This download link has reached its download limit.');
+  if (!data?.signedUrl) {
+    throw new Error(data?.error || 'Failed to prepare your download.');
   }
 
   return data;
-}
-
-export async function incrementDownloadCount(downloadTokenId, currentCount) {
-  const { error } = await supabase
-    .from('download_tokens')
-    .update({
-      download_count: currentCount + 1
-    })
-    .eq('id', downloadTokenId);
-
-  if (error) {
-    throw error;
-  }
 }

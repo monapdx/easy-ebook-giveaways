@@ -4,7 +4,8 @@ import { useCampaigns } from '../hooks/useCampaigns';
 import CampaignList from '../components/CampaignList';
 
 export default function CampaignListPage() {
-  const { campaigns, loading, error } = useCampaigns();
+  const { campaigns, loading, error, deleteError, deletingCampaignId, removeCampaign } =
+    useCampaigns();
 
   return (
     <div className="stack-lg">
@@ -15,6 +16,7 @@ export default function CampaignListPage() {
 
       {loading ? <p>Loading campaigns...</p> : null}
       {error ? <p>{error}</p> : null}
+      {deleteError ? <p>{deleteError}</p> : null}
 
       {!loading && !error && campaigns.length === 0 ? (
         <EmptyState
@@ -24,7 +26,11 @@ export default function CampaignListPage() {
       ) : null}
 
       {!loading && campaigns.length > 0 ? (
-        <CampaignList campaigns={campaigns} />
+        <CampaignList
+          campaigns={campaigns}
+          deletingCampaignId={deletingCampaignId}
+          onDeleteCampaign={removeCampaign}
+        />
       ) : null}
     </div>
   );

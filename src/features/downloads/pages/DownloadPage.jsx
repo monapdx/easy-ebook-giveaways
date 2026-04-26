@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getDownloadUrl } from '../../ebooks/services/ebookService';
-import {
-  getValidDownloadToken,
-  incrementDownloadCount
-} from '../services/downloadService';
+import { resolveDownload } from '../services/downloadService';
 
 export default function DownloadPage() {
   const { token } = useParams();
   const [url, setUrl] = useState(null);
-  const [downloadRecord, setDownloadRecord] = useState(null);
+  const [downloadMeta, setDownloadMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -18,13 +14,12 @@ export default function DownloadPage() {
 
     async function loadDownload() {
       try {
-        const tokenRecord = await getValidDownloadToken(token);
-        const signedUrl = await getDownloadUrl(tokenRecord.ebook_id, true);
+        const resolvedDownload = await resolveDownload(token);
 
         if (!isMounted) return;
 
-        setDownloadRecord(tokenRecord);
-        setUrl(signedUrl);
+        setDownloadMeta(resolvedDownload);
+        setUrl(resolvedDownload.signedUrl);
       } catch (err) {
         if (!isMounted) return;
         setError(err.message || 'Failed to prepare your download.');
@@ -40,19 +35,6 @@ export default function DownloadPage() {
       isMounted = false;
     };
   }, [token]);
-
-  async function handleDownloadClick() {
-    if (!downloadRecord) return;
-
-    try {
-      await incrementDownloadCount(
-        downloadRecord.id,
-        downloadRecord.download_count
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  }
 
   if (loading) {
     return (
@@ -70,7 +52,7 @@ export default function DownloadPage() {
     );
   }
 
-  if (!url || !downloadRecord) {
+  if (!url || !downloadMeta) {
     return (
       <div className="public-page">
         <p>Download unavailable.</p>
@@ -81,11 +63,11 @@ export default function DownloadPage() {
   return (
     <div className="public-page stack">
       <h1>Your ebook is ready</h1>
-      <p>This link expires on {new Date(downloadRecord.expires_at).toLocaleString()}.</p>
+      <p>This link expires on {new Date(downloadMeta.expiresAt).toLocaleString()}.</p>
       <p>
-        Downloads used: {downloadRecord.download_count} / {downloadRecord.max_downloads}
+        Downloads used: {downloadMeta.downloadCount} / {downloadMeta.maxDownloads}
       </p>
-      <a href={url} download onClick={handleDownloadClick}>
+      <a href={url} download>
         Download your ebook
       </a>
     </div>

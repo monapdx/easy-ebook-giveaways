@@ -52,6 +52,8 @@ select {
   border-right: 1px solid var(--border);
   padding: 24px;
   background: #0d1016;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .brand {
@@ -76,6 +78,26 @@ select {
 .sidebar-nav a:hover {
   background: var(--panel);
   color: var(--text);
+}
+
+.sidebar-account {
+  margin-top: 24px;
+  min-width: 0;
+}
+
+.sidebar-account-text {
+  color: var(--muted);
+  margin: 0;
+}
+
+.sidebar-account-email {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.sidebar .btn,
+.sidebar a > .btn {
+  width: 100%;
 }
 
 .dashboard-main {

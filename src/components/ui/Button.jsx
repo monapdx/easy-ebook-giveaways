@@ -3,9 +3,10 @@ export default function Button({
   type = 'button',
   variant = 'primary',
   onClick,
+  disabled = false
 }) {
   return (
-    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
+    <button type={type} className={`btn btn-${variant}`} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );

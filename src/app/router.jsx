@@ -22,6 +22,7 @@ export function AppRouter() {
     <BrowserRouter basename="/easy-ebook-giveaways">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<SignupPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
         <Route

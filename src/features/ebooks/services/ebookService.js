@@ -46,36 +46,3 @@ export async function getEbookByCampaign(campaignId) {
 
   return data ?? null;
 }
-
-export async function getEbookById(ebookId) {
-  const { data, error } = await supabase
-    .from('ebooks')
-    .select('*')
-    .eq('id', ebookId)
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-export async function getDownloadUrl(value, isEbookId = false) {
-  let filePath = value;
-
-  if (isEbookId) {
-    const ebook = await getEbookById(value);
-    filePath = ebook.file_path;
-  }
-
-  const { data, error } = await supabase.storage
-    .from('ebook-files')
-    .createSignedUrl(filePath, 60 * 60);
-
-  if (error) {
-    throw error;
-  }
-
-  return data.signedUrl;
-}

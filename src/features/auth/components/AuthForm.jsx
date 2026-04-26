@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import { supabase } from '../../../lib/supabaseClient';
 
 export default function AuthForm({ mode = 'login' }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -12,6 +15,7 @@ export default function AuthForm({ mode = 'login' }) {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   function updateField(event) {
     const { name, value } = event.target;
@@ -22,54 +26,60 @@ export default function AuthForm({ mode = 'login' }) {
     event.preventDefault();
     setError('');
     setMessage('');
+    setSubmitting(true);
 
-    if (mode === 'signup') {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: {
-            display_name: form.name
+    try {
+      if (mode === 'signup') {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            data: {
+              display_name: form.name
+            }
           }
-        }
-      });
+        });
 
-      if (signUpError) {
-        setError(signUpError.message);
+        if (signUpError) {
+          setError(signUpError.message);
+          return;
+        }
+
+        if (data.user) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            display_name: form.name,
+            author_name: form.name,
+            sender_name: form.name,
+            sender_email: form.email
+          });
+        }
+
+        setMessage('Account created. Check your email to confirm your signup.');
         return;
       }
 
-      if (data.user) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          display_name: form.name,
-          author_name: form.name,
-          sender_name: form.name,
-          sender_email: form.email
-        });
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password
+      });
+
+      if (loginError) {
+        setError(loginError.message);
+        return;
       }
 
-      setMessage('Account created. Check your email to confirm your signup.');
-      return;
+      const nextPath = location.state?.from?.pathname ?? '/';
+      navigate(nextPath, { replace: true });
+    } finally {
+      setSubmitting(false);
     }
-
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: form.email,
-      password: form.password
-    });
-
-    if (loginError) {
-      setError(loginError.message);
-      return;
-    }
-
-    setMessage('Logged in successfully.');
   }
 
   return (
     <Card>
       <form onSubmit={handleSubmit} className="stack">
-        <h2>{mode === 'login' ? 'Log in' : 'Create account'}</h2>
+        <h2>{mode === 'login' ? 'Log in' : 'Register account'}</h2>
 
         {mode === 'signup' && (
           <Input
@@ -102,9 +112,19 @@ export default function AuthForm({ mode = 'login' }) {
         {error ? <p>{error}</p> : null}
         {message ? <p>{message}</p> : null}
 
-        <Button type="submit">
-          {mode === 'login' ? 'Log in' : 'Create account'}
+        <Button type="submit" disabled={submitting}>
+          {mode === 'login' ? 'Log in' : 'Register account'}
         </Button>
+
+        {mode === 'login' ? (
+          <p className="muted" style={{ margin: 0 }}>
+            Need an account? <Link to="/register">Register</Link>
+          </p>
+        ) : (
+          <p className="muted" style={{ margin: 0 }}>
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
+        )}
       </form>
     </Card>
   );

@@ -46,13 +46,13 @@ export default function DashboardLayout() {
           <NavLink to="/campaigns/new">New Campaign</NavLink>
         </nav>
 
-        <div className="stack" style={{ marginTop: '24px' }}>
+        <div className="stack sidebar-account">
           {user ? (
             <>
-              <p style={{ color: 'var(--muted)', margin: 0 }}>
+              <p className="sidebar-account-text">
                 Logged in as
                 <br />
-                <strong style={{ color: 'var(--text)' }}>{user.email}</strong>
+                <strong className="sidebar-account-email">{user.email}</strong>
               </p>
               <Button onClick={handleLogout} variant="secondary">
                 Log out
@@ -60,13 +60,11 @@ export default function DashboardLayout() {
             </>
           ) : (
             <>
-              <p style={{ color: 'var(--muted)', margin: 0 }}>
-                You are not logged in.
-              </p>
+              <p className="sidebar-account-text">You are not logged in.</p>
               <Link to="/login">
                 <Button variant="secondary">Log in</Button>
               </Link>
-              <Link to="/signup">
+              <Link to="/register">
                 <Button>Sign up</Button>
               </Link>
             </>

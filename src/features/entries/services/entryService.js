@@ -1,6 +1,24 @@
 import { supabase } from '../../../lib/supabaseClient';
 import { createDownloadToken } from '../../downloads/services/downloadService';
 
+export async function getEntriesByCampaign(campaignId) {
+  if (!campaignId) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('entries')
+    .select('*')
+    .eq('campaign_id', campaignId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
 export async function submitEntry(payload) {
   const { data: entry, error } = await supabase
     .from('entries')

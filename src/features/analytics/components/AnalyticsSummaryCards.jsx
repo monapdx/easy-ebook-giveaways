@@ -1,20 +1,27 @@
 import Card from '../../../components/ui/Card';
+import { useCampaignAnalytics } from '../hooks/useCampaignAnalytics';
 
-export default function AnalyticsSummaryCards() {
+export default function AnalyticsSummaryCards({ campaignId }) {
+  const { analytics, loading, error } = useCampaignAnalytics(campaignId);
+
   const items = [
-    { label: 'Page Views', value: 380 },
-    { label: 'Entries', value: 142 },
-    { label: 'Downloads', value: 118 }
+    { label: 'Page Views', value: analytics.pageViews },
+    { label: 'Entries', value: analytics.entries },
+    { label: 'Downloads', value: analytics.downloads }
   ];
 
   return (
-    <div className="grid-3">
-      {items.map((item) => (
-        <Card key={item.label}>
-          <strong>{item.label}</strong>
-          <p>{item.value}</p>
-        </Card>
-      ))}
-    </div>
+    <>
+      {error ? <p>{error}</p> : null}
+
+      <div className="grid-3">
+        {items.map((item) => (
+          <Card key={item.label}>
+            <strong>{item.label}</strong>
+            <p>{loading ? '...' : item.value.toLocaleString()}</p>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 }
