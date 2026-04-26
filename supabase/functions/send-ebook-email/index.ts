@@ -8,8 +8,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
  * - BREVO_SENDER_EMAIL (verified sender in Brevo)
  * - BREVO_SENDER_NAME (optional)
  * - PUBLIC_SITE_URL (origin, no trailing slash; e.g. http://localhost:5173)
- * - PUBLIC_APP_PATH_PREFIX (optional; default `easy-ebook-giveaways`. Set to empty for links like
- *   `{origin}/download/...` when the app is served from the site root.)
+ * - PUBLIC_APP_PATH_PREFIX (optional). Unset = download links use site root `{origin}/download/...`.
+ *   Set to `easy-ebook-giveaways` if the app still lives under that path (legacy GitHub project URL).
  * - SUPABASE_SERVICE_ROLE_KEY
  *
  * Database: run migration `20260426140000_download_tokens_email_tracking.sql`
@@ -24,7 +24,7 @@ const corsHeaders = {
 function buildDownloadUrlPathPrefix(): string {
   const raw = Deno.env.get('PUBLIC_APP_PATH_PREFIX');
   if (raw === undefined) {
-    return '/easy-ebook-giveaways';
+    return '';
   }
   const trimmed = raw.trim();
   if (trimmed === '' || trimmed === '/') {

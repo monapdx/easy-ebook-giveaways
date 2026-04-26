@@ -35,6 +35,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Custom domain at apex (easyebookgiveaways.com): leave unset or use "/".
+          # GitHub Pages project URL only: set repo var VITE_BASE_PATH to /easy-ebook-giveaways/
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
