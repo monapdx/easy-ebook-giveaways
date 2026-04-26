@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import Button from '../../components/ui/Button';
+import SiteFooter from '../../components/layout/SiteFooter';
 
 export default function DashboardLayout() {
   const [session, setSession] = useState(null);
@@ -80,6 +81,8 @@ export default function DashboardLayout() {
         <div className="page-content">
           <Outlet />
         </div>
+
+        <SiteFooter />
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import SiteFooter from '../../../components/layout/SiteFooter';
 
 export default function AuthGuard({ children }) {
   const location = useLocation();
@@ -28,7 +29,14 @@ export default function AuthGuard({ children }) {
   }, []);
 
   if (status === 'loading') {
-    return <p>Checking login...</p>;
+    return (
+      <div className="auth-page auth-page-stacked">
+        <p className="muted" style={{ margin: 0 }}>
+          Checking login...
+        </p>
+        <SiteFooter />
+      </div>
+    );
   }
 
   if (status === 'unauthenticated') {
