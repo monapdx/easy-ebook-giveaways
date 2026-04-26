@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabaseClient';
 import { createDownloadToken } from '../../downloads/services/downloadService';
+import { sendDownloadLinkEmail } from '../../email/services/emailService';
 
 export async function getEntriesByCampaign(campaignId) {
   if (!campaignId) {
@@ -39,6 +40,12 @@ export async function submitEntry(payload) {
     campaignId: payload.campaignId,
     entryId: entry.id
   });
+
+  try {
+    await sendDownloadLinkEmail(token);
+  } catch (err) {
+    console.warn('send-ebook-email failed:', err?.message || err);
+  }
 
   return {
     entry,

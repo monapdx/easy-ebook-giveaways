@@ -22,6 +22,14 @@ export default function AuthForm({ mode = 'login' }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function normalizeEmail(value) {
+    return value.trim().toLowerCase();
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
@@ -29,9 +37,16 @@ export default function AuthForm({ mode = 'login' }) {
     setSubmitting(true);
 
     try {
+      const normalizedEmail = normalizeEmail(form.email);
+
+      if (!isValidEmail(normalizedEmail)) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+
       if (mode === 'signup') {
         const { data, error: signUpError } = await supabase.auth.signUp({
-          email: form.email,
+          email: normalizedEmail,
           password: form.password,
           options: {
             data: {
@@ -51,7 +66,7 @@ export default function AuthForm({ mode = 'login' }) {
             display_name: form.name,
             author_name: form.name,
             sender_name: form.name,
-            sender_email: form.email
+            sender_email: normalizedEmail
           });
         }
 
@@ -60,7 +75,7 @@ export default function AuthForm({ mode = 'login' }) {
       }
 
       const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: form.email,
+        email: normalizedEmail,
         password: form.password
       });
 
@@ -71,6 +86,8 @@ export default function AuthForm({ mode = 'login' }) {
 
       const nextPath = location.state?.from?.pathname ?? '/';
       navigate(nextPath, { replace: true });
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +95,7 @@ export default function AuthForm({ mode = 'login' }) {
 
   return (
     <Card>
-      <form onSubmit={handleSubmit} className="stack">
+      <form onSubmit={handleSubmit} className="stack" noValidate>
         <h2>{mode === 'login' ? 'Log in' : 'Register account'}</h2>
 
         {mode === 'signup' && (
@@ -98,6 +115,7 @@ export default function AuthForm({ mode = 'login' }) {
           value={form.email}
           onChange={updateField}
           placeholder="you@example.com"
+          autoComplete="email"
         />
 
         <Input

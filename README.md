@@ -191,21 +191,26 @@
 
 ## ⬇️ Phase 8: Secure File Delivery
 
-### ✅ Token Validation
+### ✅ Token validation (Edge Function)
 
-* Validates:
+* `resolve-download` Edge Function validates the download token server-side
+* Checks expiration and download limits before issuing a signed storage URL
+* Increments download count on the server
 
-  * Expiration
-  * Download limit
+### ✅ Signed URL generation (server-side)
 
-### ✅ Signed URL Generation
+* Signed URLs are created inside Edge Functions using the service role (not in the browser)
 
-* Uses Supabase Storage signed URLs
-* File access is temporary and secure
+### ✅ Download link email (Brevo + Edge Function)
 
-### ✅ Download Tracking
+* After a successful giveaway entry, the app invokes `send-ebook-email`
+* That function loads the recipient from the database using the download token, sends via **Brevo**, and records success with `email_sent_at` (see migration under `supabase/migrations/`)
+* Duplicate sends are reduced via a short DB lock (`email_send_locked_at`) + idempotency when `email_sent_at` is set
+* Best-effort **per-IP rate limiting** inside the function (sliding window)
 
-* Increment download count per click
+### ✅ Download page UX
+
+* Readers are still redirected to `/download/:token` so they can download immediately even if email is delayed
 
 ---
 
@@ -216,13 +221,14 @@
 * RLS policies for all core tables
 * Token expiration + limits
 * Private storage bucket
-* Signed URLs
+* Signed URLs issued from Edge Functions (not the React client)
+* Download token validation and signed URL creation off the client (`resolve-download`)
+* Transactional download email via Brevo from Edge Function (`send-ebook-email`), with idempotency + lock columns (after migration)
 
 ### ⚠️ Future Improvement
 
-* Move token validation to Supabase Edge Functions
-* Prevent client-side token inspection
-* Harden storage access rules further
+* Tighten storage policies further (least privilege beyond signed URLs)
+* Optional: move rate limiting to a durable store (Redis / gateway) for multi-region consistency
 
 ---
 
@@ -237,6 +243,7 @@ The app now supports:
 * Entry collection
 * Token-based gated downloads
 * Download tracking and limits
+* Brevo-powered download link emails (Edge Function + DB-backed recipient)
 
 ---
 
@@ -247,7 +254,7 @@ The app now supports:
 Flow:
 
 Author → creates campaign → uploads ebook → publishes
-User → visits page → submits form → receives token → downloads ebook
+User → visits page → submits form → redirect to download + optional Brevo email with the same link
 
 ---
 
@@ -255,8 +262,9 @@ User → visits page → submits form → receives token → downloads ebook
 
 ### High Priority
 
-* 📧 Email delivery (send download link instead of redirect)
-* 🔐 Move token validation to Edge Functions
+* Run Supabase migrations (especially `download_tokens` email columns + `try_lock_download_email_send`)
+* Configure Edge Function secrets: `BREVO_*`, `PUBLIC_SITE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+* (Optional) Configure Supabase Auth SMTP in Brevo so signup/reset emails match the same provider
 
 ### Medium Priority
 
@@ -281,11 +289,11 @@ Future work is primarily:
 
 * UX polish
 * conversion optimization
-* delivery improvements
+* deliverability tuning (Brevo templates, bounce handling, auth SMTP)
 
 ---
 
 **Status:** 🟢 MVP Functional
-**Next Focus:** Email delivery + UX polish
+**Next Focus:** UX polish + optional Supabase Auth SMTP (Brevo) for parity with transactional mail
 
 ---

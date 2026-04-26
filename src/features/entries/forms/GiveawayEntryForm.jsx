@@ -85,7 +85,8 @@ return (
 
           {/* trust booster */}
           <p className="form-footnote">
-            📩 Delivered instantly to your inbox
+            Instant download on the next screen — we also email you the link when email delivery is
+            enabled.
           </p>
         </form>
       </Card>
