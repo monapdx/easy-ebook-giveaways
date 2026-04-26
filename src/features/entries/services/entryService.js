@@ -27,7 +27,8 @@ export async function submitEntry(payload) {
       campaign_id: payload.campaignId,
       name: payload.name,
       email: payload.email,
-      consent_newsletter: payload.consentNewsletter
+      consent_newsletter: payload.consentNewsletter,
+      consent_author_contact: payload.consentAuthorShare
     })
     .select()
     .single();

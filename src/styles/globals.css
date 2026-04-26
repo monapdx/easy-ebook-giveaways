@@ -127,6 +127,44 @@ select {
   margin: 0 auto;
 }
 
+.legal-doc h1 {
+  margin: 0 0 4px;
+}
+
+.legal-doc h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 20px 0 10px;
+  color: var(--text);
+}
+
+.legal-doc h3 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  margin: 16px 0 8px;
+  color: var(--text);
+}
+
+.legal-doc p {
+  margin: 0 0 12px;
+  line-height: 1.6;
+}
+
+.legal-doc p,
+.legal-doc li {
+  color: var(--muted);
+}
+
+.legal-list {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+
+.legal-doc a {
+  color: #f0abfc;
+}
+
 .auth-page {
   display: grid;
   place-items: center;

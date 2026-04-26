@@ -16,6 +16,7 @@ import CampaignAnalyticsPage from '../features/analytics/pages/CampaignAnalytics
 import PublicGiveawayPage from '../features/landingPages/pages/PublicGiveawayPage';
 import GiveawaySuccessPage from '../features/landingPages/pages/GiveawaySuccessPage';
 import DownloadPage from '../features/downloads/pages/DownloadPage';
+import PrivacyPage from '../features/legal/pages/PrivacyPage';
 
 export function AppRouter() {
   return (
@@ -48,6 +49,10 @@ export function AppRouter() {
         </Route>
 
         <Route path="/download/:token" element={<DownloadPage />} />
+
+        <Route path="/privacy" element={<PublicLayout />}>
+          <Route index element={<PrivacyPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

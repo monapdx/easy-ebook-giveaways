@@ -33,6 +33,7 @@ export function useEntries(campaignId) {
             name: entry.name,
             email: entry.email,
             consentNewsletter: entry.consent_newsletter,
+            consentAuthorContact: entry.consent_author_contact,
             createdAt: entry.created_at
           }))
         );

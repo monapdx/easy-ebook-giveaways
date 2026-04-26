@@ -4,6 +4,7 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import { supabase } from '../../../lib/supabaseClient';
+import AuthorContactConsentBlock from '../../entries/components/AuthorContactConsentBlock';
 
 export default function AuthForm({ mode = 'login' }) {
   const navigate = useNavigate();
@@ -11,15 +12,19 @@ export default function AuthForm({ mode = 'login' }) {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    name: ''
+    name: '',
+    consentAuthorShare: false
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   function updateField(event) {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = event.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   }
 
   function normalizeEmail(value) {
@@ -45,12 +50,21 @@ export default function AuthForm({ mode = 'login' }) {
       }
 
       if (mode === 'signup') {
+        if (!form.consentAuthorShare) {
+          setError(
+            'Please confirm you agree to receive the ebook and that your email may be shared with the author/creator.'
+          );
+          return;
+        }
+
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: normalizedEmail,
           password: form.password,
           options: {
             data: {
-              display_name: form.name
+              display_name: form.name,
+              consent_author_contact: true,
+              consent_author_contact_at: new Date().toISOString()
             }
           }
         });
@@ -117,6 +131,13 @@ export default function AuthForm({ mode = 'login' }) {
           placeholder="you@example.com"
           autoComplete="email"
         />
+
+        {mode === 'signup' ? (
+          <AuthorContactConsentBlock
+            checked={form.consentAuthorShare}
+            onChange={updateField}
+          />
+        ) : null}
 
         <Input
           label="Password"

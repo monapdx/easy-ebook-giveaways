@@ -4,12 +4,14 @@ import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { submitEntry } from '../services/entryService';
+import AuthorContactConsentBlock from '../components/AuthorContactConsentBlock';
 
 export default function GiveawayEntryForm({ campaignId }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
     email: '',
+    consentAuthorShare: false,
     consentNewsletter: true
   });
   const [error, setError] = useState('');
@@ -26,6 +28,14 @@ export default function GiveawayEntryForm({ campaignId }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
+
+    if (!form.consentAuthorShare) {
+      setError(
+        'Please confirm you agree to receive the ebook and that your email may be shared with the author.'
+      );
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -41,7 +51,8 @@ export default function GiveawayEntryForm({ campaignId }) {
       setSubmitting(false);
     }
   }
-return (
+
+  return (
     <section id="cta" className="cta-section">
       <Card>
         <form onSubmit={handleSubmit} className="stack form-enhanced">
@@ -65,6 +76,11 @@ return (
             value={form.email}
             onChange={updateField}
             placeholder="you@example.com"
+          />
+
+          <AuthorContactConsentBlock
+            checked={form.consentAuthorShare}
+            onChange={updateField}
           />
 
           <label className="checkbox-row">

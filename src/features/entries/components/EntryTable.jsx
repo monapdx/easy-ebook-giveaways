@@ -8,6 +8,7 @@ export default function EntryTable({ entries }) {
           <tr>
             <th>Name</th>
             <th>Email</th>
+            <th>Author contact</th>
             <th>Subscribed</th>
             <th>Date</th>
           </tr>
@@ -17,6 +18,7 @@ export default function EntryTable({ entries }) {
             <tr key={entry.id}>
               <td>{entry.name}</td>
               <td>{entry.email}</td>
+              <td>{entry.consentAuthorContact ? 'Yes' : 'No'}</td>
               <td>{entry.consentNewsletter ? 'Yes' : 'No'}</td>
               <td>{entry.createdAt}</td>
             </tr>
