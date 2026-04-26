@@ -28,3 +28,5 @@ export default defineConfig(({ mode }) => {
     base
   };
 });
+
+// Contributed via automated bounty system
