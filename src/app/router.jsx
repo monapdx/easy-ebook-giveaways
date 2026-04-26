@@ -18,9 +18,13 @@ import GiveawaySuccessPage from '../features/landingPages/pages/GiveawaySuccessP
 import DownloadPage from '../features/downloads/pages/DownloadPage';
 import PrivacyPage from '../features/legal/pages/PrivacyPage';
 
+// Must match Vite `base` (see vite.config.js). Empty in dev → serve from /.
+const routerBasename =
+  (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '') || undefined;
+
 export function AppRouter() {
   return (
-    <BrowserRouter basename="/easy-ebook-giveaways">
+    <BrowserRouter basename={routerBasename}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignupPage />} />

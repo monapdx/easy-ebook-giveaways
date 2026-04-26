@@ -8,6 +8,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
  * - BREVO_SENDER_EMAIL (verified sender in Brevo)
  * - BREVO_SENDER_NAME (optional)
  * - PUBLIC_SITE_URL (origin, no trailing slash; e.g. http://localhost:5173)
+ * - PUBLIC_APP_PATH_PREFIX (optional; default `easy-ebook-giveaways`. Set to empty for links like
+ *   `{origin}/download/...` when the app is served from the site root.)
  * - SUPABASE_SERVICE_ROLE_KEY
  *
  * Database: run migration `20260426140000_download_tokens_email_tracking.sql`
@@ -19,7 +21,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
-const APP_BASE_PATH = '/easy-ebook-giveaways';
+function buildDownloadUrlPathPrefix(): string {
+  const raw = Deno.env.get('PUBLIC_APP_PATH_PREFIX');
+  if (raw === undefined) {
+    return '/easy-ebook-giveaways';
+  }
+  const trimmed = raw.trim();
+  if (trimmed === '' || trimmed === '/') {
+    return '';
+  }
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
 
 /** Simple per-IP sliding window (best-effort; resets on isolate cold start). */
 const RATE_WINDOW_MS = 60_000;
@@ -207,7 +219,8 @@ Deno.serve(async (req) => {
     }
 
     const campaignTitle = campaign?.title ?? 'Your ebook';
-    const downloadUrl = `${publicSiteUrl}${APP_BASE_PATH}/download/${encodeURIComponent(tokenRow.token)}`;
+    const pathPrefix = buildDownloadUrlPathPrefix();
+    const downloadUrl = `${publicSiteUrl}${pathPrefix ? `${pathPrefix}/` : ''}download/${encodeURIComponent(tokenRow.token)}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>
