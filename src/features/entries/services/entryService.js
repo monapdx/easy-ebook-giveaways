@@ -1,6 +1,4 @@
 import { supabase } from '../../../lib/supabaseClient';
-import { createDownloadToken } from '../../downloads/services/downloadService';
-import { sendDownloadLinkEmail } from '../../email/services/emailService';
 
 export async function getEntriesByCampaign(campaignId) {
   if (!campaignId) {
@@ -55,19 +53,24 @@ export async function submitEntry(payload) {
     throw error;
   }
 
-  const token = await createDownloadToken({
-    campaignId: payload.campaignId,
-    entryId: entry.id
-  });
+  const { data: emailResult, error: emailError } = await supabase.functions.invoke(
+    'send-download-email',
+    {
+      body: {
+        entry_id: entry.id
+      }
+    }
+  );
 
-  try {
-    await sendDownloadLinkEmail(token);
-  } catch (err) {
-    console.warn('send-ebook-email failed:', err?.message || err);
+  if (emailError) {
+    throw new Error(emailError.message || 'Failed to send your download email.');
+  }
+
+  if (!emailResult?.ok) {
+    throw new Error(emailResult?.error || 'Failed to send your download email.');
   }
 
   return {
-    entry,
-    token
+    entry
   };
 }
