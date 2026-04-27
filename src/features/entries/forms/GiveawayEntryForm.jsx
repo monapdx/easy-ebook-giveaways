@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
@@ -6,6 +7,7 @@ import { submitEntry } from '../services/entryService';
 import AuthorContactConsentBlock from '../components/AuthorContactConsentBlock';
 
 export default function GiveawayEntryForm({ campaignId }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -13,7 +15,6 @@ export default function GiveawayEntryForm({ campaignId }) {
     consentNewsletter: true
   });
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   function updateField(event) {
@@ -27,7 +28,6 @@ export default function GiveawayEntryForm({ campaignId }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setSuccessMessage('');
 
     if (!form.consentAuthorShare) {
       setError(
@@ -39,17 +39,16 @@ export default function GiveawayEntryForm({ campaignId }) {
     setSubmitting(true);
 
     try {
-      await submitEntry({
+      const result = await submitEntry({
         campaignId,
         ...form
       });
-      setSuccessMessage('Check your email for the download link.');
-      setForm({
-        name: '',
-        email: '',
-        consentAuthorShare: false,
-        consentNewsletter: true
-      });
+
+      if (!result?.token) {
+        throw new Error('Download token missing from response.');
+      }
+
+      navigate(`/download/${result.token}`);
     } catch (err) {
       setError(err.message || 'Something went wrong submitting your entry.');
     } finally {
@@ -99,7 +98,6 @@ export default function GiveawayEntryForm({ campaignId }) {
           </label>
 
           {error ? <p className="form-error">{error}</p> : null}
-          {successMessage ? <p>{successMessage}</p> : null}
 
           <Button type="submit" className="btn-lg">
             {submitting ? 'Sending...' : 'Get Instant Access'}
@@ -107,7 +105,7 @@ export default function GiveawayEntryForm({ campaignId }) {
 
           {/* trust booster */}
           <p className="form-footnote">
-            We will email your download link right away after submission.
+            You will be redirected to your secure download page after submission.
           </p>
         </form>
       </Card>

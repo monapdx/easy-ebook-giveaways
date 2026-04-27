@@ -264,6 +264,9 @@ Deno.serve(async (req) => {
         ok: true,
         message: 'Download email sent successfully.',
         entry_id: entry.id,
+        token: tokenRow.token,
+        download_path: downloadPath,
+        download_url: downloadUrl,
         token_expires_at: tokenRow.expires_at
       }),
       {

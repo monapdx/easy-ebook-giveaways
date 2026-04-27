@@ -71,6 +71,7 @@ export async function submitEntry(payload) {
   }
 
   return {
-    entry
+    entry,
+    token: emailResult.token
   };
 }
