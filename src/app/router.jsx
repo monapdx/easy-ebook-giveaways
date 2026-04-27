@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
 import PublicLayout from './layouts/PublicLayout';
 
@@ -18,13 +18,9 @@ import GiveawaySuccessPage from '../features/landingPages/pages/GiveawaySuccessP
 import DownloadPage from '../features/downloads/pages/DownloadPage';
 import PrivacyPage from '../features/legal/pages/PrivacyPage';
 
-// Must match Vite `base` (see vite.config.js). Empty in dev → serve from /.
-const routerBasename =
-  (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '') || undefined;
-
 export function AppRouter() {
   return (
-    <BrowserRouter basename={routerBasename}>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignupPage />} />
@@ -58,6 +54,6 @@ export function AppRouter() {
           <Route index element={<PrivacyPage />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

@@ -6,6 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
+function buildDownloadUrlPathPrefix(): string {
+  const raw = Deno.env.get('PUBLIC_APP_PATH_PREFIX');
+  if (raw === undefined) {
+    return '';
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed === '' || trimmed === '/') {
+    return '';
+  }
+
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
+
 function generateTokenString() {
   return crypto.randomUUID();
 }
@@ -184,7 +198,8 @@ Deno.serve(async (req) => {
       tokenRow = createdToken;
     }
 
-    const downloadUrl = `${publicSiteUrl}/download/${encodeURIComponent(tokenRow.token)}`;
+    const pathPrefix = buildDownloadUrlPathPrefix();
+    const downloadUrl = `${publicSiteUrl}${pathPrefix ? `${pathPrefix}/` : ''}download/${encodeURIComponent(tokenRow.token)}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>
