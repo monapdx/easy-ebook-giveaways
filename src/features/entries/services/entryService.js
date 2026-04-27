@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabaseClient';
+import { createDownloadToken } from '../../downloads/services/downloadService';
 
 export async function getEntriesByCampaign(campaignId) {
   if (!campaignId) {
@@ -70,8 +71,19 @@ export async function submitEntry(payload) {
     throw new Error(emailResult?.error || 'Failed to send your download email.');
   }
 
+  let token = emailResult?.token;
+
+  // Fallback for environments where send-download-email is not yet deployed
+  // with the new response payload that includes `token`.
+  if (!token) {
+    token = await createDownloadToken({
+      campaignId: payload.campaignId,
+      entryId: entry.id
+    });
+  }
+
   return {
     entry,
-    token: emailResult.token
+    token
   };
 }
