@@ -21,17 +21,35 @@ export async function getEntriesByCampaign(campaignId) {
 }
 
 export async function submitEntry(payload) {
-  const { data: entry, error } = await supabase
+  const insertPayload = {
+    campaign_id: payload.campaignId,
+    name: payload.name,
+    email: payload.email,
+    consent_newsletter: payload.consentNewsletter,
+    consent_author_contact: payload.consentAuthorShare
+  };
+
+  let { data: entry, error } = await supabase
     .from('entries')
-    .insert({
-      campaign_id: payload.campaignId,
-      name: payload.name,
-      email: payload.email,
-      consent_newsletter: payload.consentNewsletter,
-      consent_author_contact: payload.consentAuthorShare
-    })
+    .insert(insertPayload)
     .select()
     .single();
+
+  const isMissingConsentAuthorContactColumn =
+    !!error &&
+    (error.code === 'PGRST204' ||
+      error.message?.includes("'consent_author_contact'") ||
+      error.message?.includes('schema cache'));
+
+  // Backward-compatible fallback for environments where the migration has not run yet.
+  if (isMissingConsentAuthorContactColumn) {
+    const { consent_author_contact, ...fallbackPayload } = insertPayload;
+    ({ data: entry, error } = await supabase
+      .from('entries')
+      .insert(fallbackPayload)
+      .select()
+      .single());
+  }
 
   if (error) {
     throw error;
