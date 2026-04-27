@@ -273,6 +273,7 @@ Deno.serve(async (req) => {
         entry_id: entry.id,
         campaign_id: campaign.id,
         ebook_id: ebook.id,
+        token: tokenRow.token,
         download_url: downloadUrl,
         token_expires_at: tokenRow.expires_at
       },
