@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
+const DEFAULT_PUBLIC_SITE_URL = 'https://easyebookgiveaways.com';
+
 function buildDownloadUrlPathPrefix(): string {
   const raw = Deno.env.get('PUBLIC_APP_PATH_PREFIX');
   if (raw === undefined) {
@@ -21,6 +23,18 @@ function buildDownloadUrlPathPrefix(): string {
 
 function generateTokenString() {
   return crypto.randomUUID();
+}
+
+function normalizePublicSiteUrl(rawValue: string | undefined): string {
+  const raw = rawValue?.trim() ?? '';
+
+  // Guard against placeholder values accidentally saved as secrets.
+  if (!raw || raw.toLowerCase() === 'public_site_url') {
+    return DEFAULT_PUBLIC_SITE_URL;
+  }
+
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return withProtocol.replace(/\/$/, '');
 }
 
 function escapeHtml(value: string) {
@@ -41,16 +55,16 @@ Deno.serve(async (req) => {
     const brevoKey = Deno.env.get('BREVO_API_KEY');
     const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL');
     const senderName = Deno.env.get('BREVO_SENDER_NAME') ?? 'BookGiveaway';
-    const publicSiteUrl = Deno.env.get('PUBLIC_SITE_URL')?.replace(/\/$/, '') ?? '';
+    const publicSiteUrl = normalizePublicSiteUrl(Deno.env.get('PUBLIC_SITE_URL'));
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!brevoKey || !senderEmail || !publicSiteUrl || !supabaseUrl || !serviceRoleKey) {
+    if (!brevoKey || !senderEmail || !supabaseUrl || !serviceRoleKey) {
       return new Response(
         JSON.stringify({
           ok: false,
           error:
-            'Function is missing one or more required secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, PUBLIC_SITE_URL, SUPABASE_SERVICE_ROLE_KEY.'
+            'Function is missing one or more required secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, SUPABASE_SERVICE_ROLE_KEY.'
         }),
         {
           status: 500,
@@ -188,14 +202,26 @@ Deno.serve(async (req) => {
     }
 
     const pathPrefix = buildDownloadUrlPathPrefix();
-    const downloadUrl = `${publicSiteUrl}${pathPrefix ? `${pathPrefix}/` : '/'}download/${encodeURIComponent(tokenRow.token)}`;
+    const downloadPath = `${pathPrefix ? `${pathPrefix}/` : '/'}download/${encodeURIComponent(tokenRow.token)}`;
+    const downloadUrl = `${publicSiteUrl}${downloadPath}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>
       <p>Thanks for requesting <strong>${escapeHtml(campaign.title || 'your ebook')}</strong>.</p>
-      <p><a href="${downloadUrl}">Download your ebook</a></p>
+      <p>Open your browser and go to this path on our site:</p>
+      <p><code>${escapeHtml(downloadPath)}</code></p>
+      <p>Then paste this full URL if needed:</p>
+      <p><code>${escapeHtml(downloadUrl)}</code></p>
       <p>This link expires on ${new Date(tokenRow.expires_at).toUTCString()}.</p>
     `.trim();
+
+    const textContent = [
+      `Hi ${entry.name || 'there'},`,
+      `Thanks for requesting ${campaign.title || 'your ebook'}.`,
+      `Download path: ${downloadPath}`,
+      `Full URL: ${downloadUrl}`,
+      `This link expires on ${new Date(tokenRow.expires_at).toUTCString()}.`
+    ].join('\n');
 
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -208,7 +234,13 @@ Deno.serve(async (req) => {
         sender: { name: senderName, email: senderEmail },
         to: [{ email: entry.email, name: entry.name || undefined }],
         subject: `Your ebook download link: ${campaign.title || 'Ebook'}`,
-        htmlContent
+        htmlContent,
+        textContent,
+        headers: {
+          'X-Mailin-Track': '0',
+          'X-Mailin-Track-Click': '0',
+          'X-Mailin-Track-Opens': '0'
+        }
       })
     });
 
