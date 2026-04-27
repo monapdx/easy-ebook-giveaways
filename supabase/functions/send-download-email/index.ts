@@ -1,5 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+/**
+ * Download-link email (Brevo). Secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME (optional),
+ * PUBLIC_SITE_URL, PUBLIC_APP_PATH_PREFIX (optional; must match Vite base / VITE_BASE_PATH),
+ * SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+ *
+ * PUBLIC_SITE_URL + prefix: use origin + PUBLIC_APP_PATH_PREFIX, or full app base with prefix unset —
+ * do not set both to include the same repo path (links would duplicate /repo/repo/...).
+ */
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,6 +27,20 @@ function buildDownloadUrlPathPrefix(): string {
   }
 
   return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
+
+/**
+ * Join origin (or full app base) with the SPA path prefix exactly once.
+ * Prevents /repo/repo/download/... when PUBLIC_SITE_URL already ends with the repo path
+ * and PUBLIC_APP_PATH_PREFIX is also set (a common misconfiguration).
+ */
+function buildPublicDownloadBaseUrl(publicSiteUrl: string, pathPrefix: string): string {
+  const site = publicSiteUrl.replace(/\/$/, '');
+  if (!pathPrefix) return site;
+  if (site.endsWith(pathPrefix)) {
+    return site;
+  }
+  return `${site}${pathPrefix}`;
 }
 
 function generateTokenString() {
@@ -199,7 +222,8 @@ Deno.serve(async (req) => {
     }
 
     const pathPrefix = buildDownloadUrlPathPrefix();
-    const downloadUrl = `${publicSiteUrl}${pathPrefix ? `${pathPrefix}/` : ''}download/${encodeURIComponent(tokenRow.token)}`;
+    const appBase = buildPublicDownloadBaseUrl(publicSiteUrl, pathPrefix);
+    const downloadUrl = `${appBase}/download/${encodeURIComponent(tokenRow.token)}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>

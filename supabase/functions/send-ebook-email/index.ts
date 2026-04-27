@@ -7,9 +7,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
  * - BREVO_API_KEY
  * - BREVO_SENDER_EMAIL (verified sender in Brevo)
  * - BREVO_SENDER_NAME (optional)
- * - PUBLIC_SITE_URL (origin, no trailing slash; e.g. http://localhost:5173)
- * - PUBLIC_APP_PATH_PREFIX (optional). Unset = download links use site root `{origin}/download/...`.
- *   Set to `easy-ebook-giveaways` if the app still lives under that path (legacy GitHub project URL).
+ * - PUBLIC_SITE_URL (no trailing slash). Prefer origin only, e.g. https://user.github.io, with
+ *   PUBLIC_APP_PATH_PREFIX set to the repo segment; or set PUBLIC_SITE_URL to the full app base
+ *   (origin + repo path) and leave PUBLIC_APP_PATH_PREFIX unset — never duplicate the repo path.
+ * - PUBLIC_APP_PATH_PREFIX (optional). Unset = `{PUBLIC_SITE_URL}/download/...`.
+ *   Set to `easy-ebook-giveaways` if the SPA base is that path (matches VITE_BASE_PATH).
  * - SUPABASE_SERVICE_ROLE_KEY
  *
  * Database: run migration `20260426140000_download_tokens_email_tracking.sql`
@@ -31,6 +33,15 @@ function buildDownloadUrlPathPrefix(): string {
     return '';
   }
   return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
+
+function buildPublicDownloadBaseUrl(publicSiteUrl: string, pathPrefix: string): string {
+  const site = publicSiteUrl.replace(/\/$/, '');
+  if (!pathPrefix) return site;
+  if (site.endsWith(pathPrefix)) {
+    return site;
+  }
+  return `${site}${pathPrefix}`;
 }
 
 /** Simple per-IP sliding window (best-effort; resets on isolate cold start). */
@@ -220,12 +231,13 @@ Deno.serve(async (req) => {
 
     const campaignTitle = campaign?.title ?? 'Your ebook';
     const pathPrefix = buildDownloadUrlPathPrefix();
-    const downloadUrl = `${publicSiteUrl}${pathPrefix ? `${pathPrefix}/` : ''}download/${encodeURIComponent(tokenRow.token)}`;
+    const appBase = buildPublicDownloadBaseUrl(publicSiteUrl, pathPrefix);
+    const downloadUrl = `${appBase}/download/${encodeURIComponent(tokenRow.token)}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>
       <p>Thanks for joining the giveaway for <strong>${escapeHtml(campaignTitle)}</strong>.</p>
-      <p><a href="${downloadUrl}">Download your ebook</a></p>
+      <p><a href="${escapeHtml(downloadUrl)}">Download your ebook</a></p>
       <p>This link expires on ${expiresAt.toUTCString()}.</p>
       <p>You can also use the download page if the button does not work.</p>
       <p>If you did not request this, you can ignore this email.</p>
