@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
     const campaignTitle = campaign?.title ?? 'Your ebook';
     const pathPrefix = buildDownloadUrlPathPrefix();
     const appBase = buildPublicDownloadBaseUrl(publicSiteUrl, pathPrefix);
-    const downloadUrl = `${appBase}/download/${encodeURIComponent(tokenRow.token)}`;
+    const downloadUrl = `${appBase}/#/download/${encodeURIComponent(tokenRow.token)}`;
 
     const htmlContent = `
       <p>Hi ${escapeHtml(entry.name || 'there')},</p>
