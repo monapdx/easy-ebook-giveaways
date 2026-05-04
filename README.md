@@ -201,12 +201,12 @@
 
 * Signed URLs are created inside Edge Functions using the service role (not in the browser)
 
-### ✅ Download link email (Brevo + Edge Function)
+### ✅ Download link email (Edge Functions)
 
-* After a successful giveaway entry, the app invokes `send-ebook-email`
-* That function loads the recipient from the database using the download token, sends via **Brevo**, and records success with `email_sent_at` (see migration under `supabase/migrations/`)
-* Duplicate sends are reduced via a short DB lock (`email_send_locked_at`) + idempotency when `email_sent_at` is set
-* Best-effort **per-IP rate limiting** inside the function (sliding window)
+* After a successful giveaway entry, the app invokes `send-download-email` to issue/reuse a token and send the message
+* The project also includes `send-ebook-email` for token-based resend/lock-aware delivery paths
+* Delivery is handled server-side via Supabase Edge Functions, with migration-backed tracking fields (`email_sent_at`, `email_send_locked_at`) and lock RPC support (`try_lock_download_email_send`)
+* Best-effort **per-IP rate limiting** is implemented in `send-ebook-email` (sliding window)
 
 ### ✅ Download page UX
 
@@ -223,7 +223,7 @@
 * Private storage bucket
 * Signed URLs issued from Edge Functions (not the React client)
 * Download token validation and signed URL creation off the client (`resolve-download`)
-* Transactional download email via Brevo from Edge Function (`send-ebook-email`), with idempotency + lock columns (after migration)
+* Transactional download email via Edge Functions (`send-download-email` / `send-ebook-email`), with idempotency + lock columns (after migration)
 
 ### ⚠️ Future Improvement
 
@@ -238,12 +238,19 @@ The app now supports:
 
 * Author authentication
 * Campaign creation and management
+* Campaign-level dashboard with overview stats
+* Campaign design editing + preview (`/campaigns/:campaignId/design`)
+* Campaign entries management (`/campaigns/:campaignId/entries`)
+* Campaign analytics summary cards (`/campaigns/:campaignId/analytics`)
 * Public giveaway pages
+* Success route for giveaway submissions (`/g/:slug/success`)
 * Ebook upload and storage
+* Optional ebook cover upload and rendering on giveaway/download pages
 * Entry collection
 * Token-based gated downloads
 * Download tracking and limits
-* Brevo-powered download link emails (Edge Function + DB-backed recipient)
+* Download link emails via Edge Functions (DB-backed recipient lookup)
+* Privacy route (`/privacy`) in public layout
 
 ---
 
@@ -254,7 +261,7 @@ The app now supports:
 Flow:
 
 Author → creates campaign → uploads ebook → publishes
-User → visits page → submits form → redirect to download + optional Brevo email with the same link
+User → visits page → submits form → redirect to download + optional email with the same link
 
 ---
 
@@ -262,21 +269,21 @@ User → visits page → submits form → redirect to download + optional Brevo 
 
 ### High Priority
 
-* Run Supabase migrations (especially `download_tokens` email columns + `try_lock_download_email_send`)
-* Configure Edge Function secrets: `BREVO_*`, `PUBLIC_SITE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
-* (Optional) Configure Supabase Auth SMTP in Brevo so signup/reset emails match the same provider
+* Run all latest Supabase migrations in order (entries consent, email tracking, cover image, public read policy, MIME-type fixes)
+* Configure Edge Function secrets: provider API key/sender values, `PUBLIC_SITE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+* Keep email sender/domain settings aligned with your current transactional email provider
 
 ### Medium Priority
 
-* 📚 Display uploaded ebook in dashboard
-* 🔁 Replace/overwrite ebook functionality
-* 🚦 Publish / Unpublish toggle
+* 🔁 Replace/overwrite ebook functionality (currently uploads latest file and reads latest attached ebook)
+* 🚦 Publish / Unpublish controls in dashboard UI (public read policy exists, author-facing toggle UX still pending)
+* 📤 CSV export for entries
 
 ### UX Improvements
 
-* 🎨 Improve public landing page design
-* 🖼️ Add cover image upload
-* ✍️ Editable campaign content (headline, bio, etc.)
+* ✍️ Persist design-form edits directly to DB (current design editor updates preview in-session)
+* 🎨 Continue polish for public giveaway and download page variants
+* 🧾 Add richer confirmation messaging around email send status on submit
 
 ---
 
@@ -289,11 +296,11 @@ Future work is primarily:
 
 * UX polish
 * conversion optimization
-* deliverability tuning (Brevo templates, bounce handling, auth SMTP)
+* deliverability tuning (templates, bounce handling, sender authentication)
 
 ---
 
-**Status:** 🟢 MVP Functional
-**Next Focus:** UX polish + optional Supabase Auth SMTP (Brevo) for parity with transactional mail
+**Status:** 🟢 MVP Functional (core auth/campaign/entry/download/email flow live)
+**Next Focus:** Publishing workflow hardening + export/reporting + UX polish
 
 ---
