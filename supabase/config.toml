@@ -1,0 +1,4 @@
+# https://supabase.com/docs/guides/cli/config
+# Anonymous readers hit resolve-download with the anon key only (no user session).
+[functions.resolve-download]
+verify_jwt = false

@@ -432,6 +432,20 @@ select {
   max-width: 600px;
 }
 
+/* Lead: cover + headline in one panel (public giveaway + design preview) */
+.giveaway-hero-with-cover {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.giveaway-hero-cover {
+  width: 100%;
+  max-width: 220px;
+  justify-self: center;
+}
+
 /* =========================
    CTA SECTION (MAIN FOCUS)
 ========================= */
@@ -452,6 +466,11 @@ select {
 ========================= */
 .book-section.enhanced {
   align-items: center;
+}
+
+.book-section-text-only {
+  display: block;
+  max-width: 640px;
 }
 
 .book-points {
@@ -485,8 +504,96 @@ h2 {
   font-size: 1rem;
 }
 
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .muted {
   color: var(--muted);
+}
+
+/* Download page (token redirect) */
+.download-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.download-page__cover-wrap {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.download-page__cover {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.download-page__title {
+  margin: 0;
+  font-size: 1.85rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.download-page__lede {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  max-width: 520px;
+}
+
+.download-page__meta {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.download-page__expiry {
+  font-size: 0.9rem;
+}
+
+.download-page__badge {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background: rgba(217, 70, 239, 0.18);
+  color: #f0abfc;
+  border: 1px solid rgba(217, 70, 239, 0.35);
+}
+
+.download-page__actions {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 4px;
+}
+
+.download-page__action-primary,
+.download-page__action-secondary {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.download-page__footnote {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 440px;
+}
+
+.download-page__loading-title {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 
@@ -513,7 +620,20 @@ h2 {
     border-bottom: 1px solid var(--border);
   }
 
-  .book-section {
+  .book-section:not(.book-section-text-only) {
     grid-template-columns: 1fr;
+  }
+
+  .giveaway-hero-with-cover {
+    grid-template-columns: 1fr;
+  }
+
+  .download-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .download-page__cover-wrap {
+    max-width: 200px;
+    margin: 0 auto;
   }
 }

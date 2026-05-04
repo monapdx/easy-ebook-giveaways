@@ -6,7 +6,7 @@ import Button from '../../../components/ui/Button';
 import { submitEntry } from '../services/entryService';
 import AuthorContactConsentBlock from '../components/AuthorContactConsentBlock';
 
-export default function GiveawayEntryForm({ campaignId }) {
+export default function GiveawayEntryForm({ campaignId, isPreview = false }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
@@ -16,6 +16,7 @@ export default function GiveawayEntryForm({ campaignId }) {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [previewNotice, setPreviewNotice] = useState('');
 
   function updateField(event) {
     const { name, value, type, checked } = event.target;
@@ -28,6 +29,12 @@ export default function GiveawayEntryForm({ campaignId }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
+    setPreviewNotice('');
+
+    if (isPreview) {
+      setPreviewNotice('This is a design preview — entries are not saved. Use your live giveaway link to collect signups.');
+      return;
+    }
 
     if (!form.consentAuthorShare) {
       setError(
@@ -98,9 +105,10 @@ export default function GiveawayEntryForm({ campaignId }) {
           </label>
 
           {error ? <p className="form-error">{error}</p> : null}
+          {previewNotice ? <p className="muted" role="status">{previewNotice}</p> : null}
 
           <Button type="submit" className="btn-lg">
-            {submitting ? 'Sending...' : 'Get Instant Access'}
+            {submitting ? 'Sending...' : isPreview ? 'Try signup (preview)' : 'Get Instant Access'}
           </Button>
 
           {/* trust booster */}

@@ -4,7 +4,7 @@ import GiveawayHero from '../components/GiveawayHero';
 import GiveawayBookSection from '../components/GiveawayBookSection';
 import GiveawayAuthorSection from '../components/GiveawayAuthorSection';
 import GiveawayEntryForm from '../../entries/forms/GiveawayEntryForm';
-import { getCampaignBySlug } from '../../campaigns/services/campaignService';
+import { getCampaignBySlugForPublic } from '../../campaigns/services/campaignService';
 
 export default function PublicGiveawayPage() {
   const { slug } = useParams();
@@ -17,7 +17,7 @@ export default function PublicGiveawayPage() {
 
     async function loadCampaign() {
       try {
-        const data = await getCampaignBySlug(slug);
+        const data = await getCampaignBySlugForPublic(slug);
 
         if (!isMounted) return;
         setCampaign(data);

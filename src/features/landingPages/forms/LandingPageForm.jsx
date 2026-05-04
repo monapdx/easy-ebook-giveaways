@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Input from '../../../components/ui/Input';
 import Textarea from '../../../components/ui/Textarea';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 
-export default function LandingPageForm() {
-  const [form, setForm] = useState({
-    headline: '',
-    subheadline: '',
-    authorBio: '',
-    accentColor: '#d946ef'
-  });
+const EMPTY_FORM = {
+  headline: '',
+  subheadline: '',
+  authorBio: '',
+  accentColor: '#d946ef'
+};
+
+export default function LandingPageForm({ initialValues, onSave, formResetKey }) {
+  const [form, setForm] = useState(() => initialValues ?? EMPTY_FORM);
+
+  useEffect(() => {
+    setForm(initialValues ?? EMPTY_FORM);
+  }, [formResetKey, initialValues]);
 
   function updateField(event) {
     const { name, value } = event.target;
@@ -19,7 +25,7 @@ export default function LandingPageForm() {
 
   function handleSubmit(event) {
     event.preventDefault();
-    console.log('landing page form', form);
+    onSave?.(form);
   }
 
   return (
@@ -62,6 +68,11 @@ export default function LandingPageForm() {
         />
 
         <Button type="submit">Save Page Content</Button>
+
+        <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>
+          Saving updates the preview below to match your headline, subheadline, author bio, and accent
+          color.
+        </p>
       </form>
     </Card>
   );

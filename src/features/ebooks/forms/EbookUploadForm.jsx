@@ -40,6 +40,7 @@ export default function EbookUploadForm({ campaignId, onUploadComplete }) {
 
       const uploaded = await uploadEbook({
         file: form.ebookFile,
+        coverFile: form.cover || undefined,
         campaignId,
         title: form.bookTitle || form.ebookFile.name
       });
@@ -72,6 +73,18 @@ export default function EbookUploadForm({ campaignId, onUploadComplete }) {
           onChange={handleChange}
           placeholder="The Glass Keep"
         />
+
+        <Input
+          label="Cover image (optional)"
+          type="file"
+          name="cover"
+          accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+          onChange={handleChange}
+        />
+
+        <p style={{ color: 'var(--muted)', margin: 0 }}>
+          JPEG, PNG, WebP, or GIF, up to 10 MB. Shown on your public giveaway page.
+        </p>
 
         <Input
           label="Ebook file"

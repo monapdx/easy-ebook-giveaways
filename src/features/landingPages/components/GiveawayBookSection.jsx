@@ -1,12 +1,6 @@
 export default function GiveawayBookSection({ campaign }) {
   return (
-    <section className="book-section enhanced">
-      <img
-        src={campaign.coverUrl}
-        alt={campaign.bookTitle}
-        className="public-cover"
-      />
-
+    <section className="book-section enhanced book-section-text-only">
       <div className="stack">
         <h2>{campaign.bookTitle}</h2>
 

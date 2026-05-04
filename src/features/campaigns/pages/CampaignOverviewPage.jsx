@@ -4,7 +4,7 @@ import CampaignHeader from '../components/CampaignHeader';
 import Card from '../../../components/ui/Card';
 import EbookUploadForm from '../../ebooks/forms/EbookUploadForm';
 import { getCampaignById } from '../services/campaignService';
-import { getEbookByCampaign } from '../../ebooks/services/ebookService';
+import { getEbookByCampaign, getEbookCoverPublicUrl } from '../../ebooks/services/ebookService';
 
 function formatEbookFormat(format) {
   if (!format) {
@@ -87,6 +87,10 @@ export default function CampaignOverviewPage() {
     return <p>Loading campaign...</p>;
   }
 
+  const coverPreviewUrl = attachedEbook
+    ? getEbookCoverPublicUrl(attachedEbook.cover_image_path)
+    : null;
+
   return (
     <div className="stack-lg">
       <CampaignHeader campaign={campaign} />
@@ -120,18 +124,32 @@ export default function CampaignOverviewPage() {
           {!ebookLoading && ebookError ? <p style={{ margin: 0 }}>{ebookError}</p> : null}
 
           {!ebookLoading && !ebookError && attachedEbook ? (
-            <div className="grid-3">
-              <div>
-                <strong>Title</strong>
-                <p>{attachedEbook.title}</p>
-              </div>
-              <div>
-                <strong>Format</strong>
-                <p>{formatEbookFormat(attachedEbook.format)}</p>
-              </div>
-              <div>
-                <strong>Uploaded</strong>
-                <p>{formatUploadDate(attachedEbook.created_at)}</p>
+            <div className="stack" style={{ gap: '1rem' }}>
+              {coverPreviewUrl ? (
+                <div>
+                  <strong>Cover</strong>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <img
+                      src={coverPreviewUrl}
+                      alt=""
+                      style={{ maxWidth: '200px', borderRadius: '8px' }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              <div className="grid-3">
+                <div>
+                  <strong>Title</strong>
+                  <p>{attachedEbook.title}</p>
+                </div>
+                <div>
+                  <strong>Format</strong>
+                  <p>{formatEbookFormat(attachedEbook.format)}</p>
+                </div>
+                <div>
+                  <strong>Uploaded</strong>
+                  <p>{formatUploadDate(attachedEbook.created_at)}</p>
+                </div>
               </div>
             </div>
           ) : null}

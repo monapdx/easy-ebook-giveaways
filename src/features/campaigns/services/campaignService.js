@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabaseClient';
+import { getEbookByCampaign, getEbookCoverPublicUrl } from '../../ebooks/services/ebookService';
 
 export async function getCampaigns() {
   const {
@@ -105,6 +106,9 @@ export async function getCampaignById(campaignId) {
   };
 }
 
+const DEFAULT_PUBLIC_COVER =
+  'https://placehold.co/300x450?text=Ebook+Cover';
+
 export async function getCampaignBySlug(slug) {
   const { data, error } = await supabase
     .from('campaigns')
@@ -117,6 +121,20 @@ export async function getCampaignBySlug(slug) {
   }
 
   return data;
+}
+
+/** Campaign row plus `bookTitle` and `coverUrl` for public giveaway UI. */
+export async function getCampaignBySlugForPublic(slug) {
+  const campaign = await getCampaignBySlug(slug);
+  const ebook = await getEbookByCampaign(campaign.id);
+  const coverUrl =
+    getEbookCoverPublicUrl(ebook?.cover_image_path) ?? DEFAULT_PUBLIC_COVER;
+
+  return {
+    ...campaign,
+    bookTitle: ebook?.title ?? campaign.title,
+    coverUrl
+  };
 }
 
 export async function createCampaign(payload) {
@@ -196,7 +214,7 @@ export async function deleteCampaign(campaignId) {
 
   const { data: ebooks, error: ebooksError } = await supabase
     .from('ebooks')
-    .select('id, file_path')
+    .select('id, file_path, cover_image_path')
     .eq('campaign_id', campaignId);
 
   if (ebooksError) {
@@ -204,11 +222,21 @@ export async function deleteCampaign(campaignId) {
   }
 
   const filePaths = (ebooks ?? []).map((ebook) => ebook.file_path).filter(Boolean);
+  const coverPaths = (ebooks ?? []).map((ebook) => ebook.cover_image_path).filter(Boolean);
 
   if (filePaths.length > 0) {
     const { error: storageError } = await supabase.storage.from('ebook-files').remove(filePaths);
     if (storageError) {
       throw storageError;
+    }
+  }
+
+  if (coverPaths.length > 0) {
+    const { error: coverStorageError } = await supabase.storage
+      .from('ebook-covers')
+      .remove(coverPaths);
+    if (coverStorageError) {
+      throw coverStorageError;
     }
   }
 

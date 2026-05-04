@@ -95,14 +95,45 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: ebook, error: ebookError } = await supabaseAdmin
-      .from('ebooks')
-      .select('file_path')
-      .eq('id', updatedRecord.ebook_id)
-      .maybeSingle();
+    // Prefer cover_image_path when the column exists (migration applied). Fall back for older DBs.
+    let ebook: {
+      file_path: string;
+      title: string | null;
+      format: string | null;
+      campaign_id?: string | null;
+      cover_image_path?: string | null;
+    } | null = null;
 
-    if (ebookError) {
-      throw ebookError;
+    {
+      const full = await supabaseAdmin
+        .from('ebooks')
+        .select('file_path, title, format, campaign_id, cover_image_path')
+        .eq('id', updatedRecord.ebook_id)
+        .maybeSingle();
+
+      if (full.error) {
+        const msg = full.error.message ?? '';
+        const missingCoverCol =
+          msg.includes('cover_image_path') || full.error.code === 'PGRST204';
+
+        if (missingCoverCol) {
+          const slim = await supabaseAdmin
+            .from('ebooks')
+            .select('file_path, title, format, campaign_id')
+            .eq('id', updatedRecord.ebook_id)
+            .maybeSingle();
+
+          if (slim.error) {
+            throw slim.error;
+          }
+
+          ebook = slim.data;
+        } else {
+          throw full.error;
+        }
+      } else {
+        ebook = full.data;
+      }
     }
 
     if (!ebook?.file_path) {
@@ -120,12 +151,70 @@ Deno.serve(async (req) => {
       throw signedUrlError;
     }
 
+    const row = ebook as Record<string, unknown>;
+    const campaignId =
+      (typeof row.campaign_id === 'string' && row.campaign_id) ||
+      (typeof row.campaignId === 'string' && row.campaignId) ||
+      null;
+
+    const coverFromRow = row.cover_image_path ?? row.coverImagePath;
+    let coverStoragePath: string | null =
+      typeof coverFromRow === 'string' && coverFromRow.trim() ? coverFromRow.trim() : null;
+
+    // Token may reference an older ebook row; use newest row in the campaign that has a cover path.
+    if (!coverStoragePath && campaignId) {
+      const { data: candidates, error: candidatesErr } = await supabaseAdmin
+        .from('ebooks')
+        .select('cover_image_path')
+        .eq('campaign_id', campaignId)
+        .order('created_at', { ascending: false })
+        .limit(15);
+
+      if (!candidatesErr && Array.isArray(candidates)) {
+        for (const c of candidates) {
+          const cr = c as Record<string, unknown>;
+          const p = cr.cover_image_path ?? cr.coverImagePath;
+          if (typeof p === 'string' && p.trim()) {
+            coverStoragePath = p.trim();
+            break;
+          }
+        }
+      }
+    }
+
+    let coverPublicUrl: string | null = null;
+    let coverSignedUrl: string | null = null;
+    if (coverStoragePath) {
+      const { data: pub } = supabaseAdmin.storage.from('ebook-covers').getPublicUrl(coverStoragePath);
+      coverPublicUrl = pub?.publicUrl ?? null;
+
+      const { data: signedCover, error: signedCoverErr } = await supabaseAdmin.storage
+        .from('ebook-covers')
+        .createSignedUrl(coverStoragePath, 60 * 60);
+
+      if (!signedCoverErr && signedCover?.signedUrl) {
+        coverSignedUrl = signedCover.signedUrl;
+      }
+    }
+
+    const extRaw = (ebook.format || ebook.file_path.split('.').pop() || 'pdf').replace(/^\./, '');
+    const safeTitle = (ebook.title || 'ebook').replace(/[/\\?%*:|"<>]/g, '').trim().slice(0, 96) || 'ebook';
+    const suggestedFileName = `${safeTitle}.${extRaw}`;
+
     return new Response(
       JSON.stringify({
         signedUrl: signed.signedUrl,
         expiresAt: updatedRecord.expires_at,
         maxDownloads: updatedRecord.max_downloads,
-        downloadCount: updatedRecord.download_count
+        downloadCount: updatedRecord.download_count,
+        ebookTitle: (row.title as string | null | undefined) ?? null,
+        ebookFormat: extRaw,
+        campaignId,
+        ebookId: updatedRecord.ebook_id,
+        coverSignedUrl,
+        coverPublicUrl,
+        coverImagePath: coverStoragePath,
+        suggestedFileName
       }),
       {
         status: 200,

@@ -51,13 +51,33 @@ export async function createDownloadToken({ campaignId, entryId }) {
   return data.token;
 }
 
+async function readFunctionsErrorMessage(error, data) {
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    return String(data.error);
+  }
+
+  const ctx = error?.context;
+  if (ctx && typeof ctx.json === 'function') {
+    try {
+      const body = await ctx.clone().json();
+      if (body?.error) {
+        return String(body.error);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return error?.message || 'Failed to resolve download.';
+}
+
 export async function resolveDownload(token) {
   const { data, error } = await supabase.functions.invoke('resolve-download', {
     body: { token }
   });
 
   if (error) {
-    throw new Error(error.message || 'Failed to resolve download.');
+    throw new Error(await readFunctionsErrorMessage(error, data));
   }
 
   if (!data?.signedUrl) {
