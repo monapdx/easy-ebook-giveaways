@@ -197,8 +197,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    const extRaw = (ebook.format || ebook.file_path.split('.').pop() || 'pdf').replace(/^\./, '');
-    const safeTitle = (ebook.title || 'ebook').replace(/[/\\?%*:|"<>]/g, '').trim().slice(0, 96) || 'ebook';
+    const fmt =
+      (typeof row.format === 'string' && row.format) ||
+      (typeof ebook.format === 'string' && ebook.format) ||
+      null;
+    const extRaw = (fmt || String(ebook.file_path).split('.').pop() || 'pdf').replace(/^\./, '');
+    const titleRaw =
+      (typeof row.title === 'string' && row.title) ||
+      (typeof ebook.title === 'string' && ebook.title) ||
+      'ebook';
+    const safeTitle = titleRaw.replace(/[/\\?%*:|"<>]/g, '').trim().slice(0, 96) || 'ebook';
     const suggestedFileName = `${safeTitle}.${extRaw}`;
 
     return new Response(
@@ -207,7 +215,10 @@ Deno.serve(async (req) => {
         expiresAt: updatedRecord.expires_at,
         maxDownloads: updatedRecord.max_downloads,
         downloadCount: updatedRecord.download_count,
-        ebookTitle: (row.title as string | null | undefined) ?? null,
+        ebookTitle:
+          (typeof row.title === 'string' && row.title.trim()) ||
+          (typeof ebook.title === 'string' && ebook.title.trim()) ||
+          null,
         ebookFormat: extRaw,
         campaignId,
         ebookId: updatedRecord.ebook_id,

@@ -71,6 +71,54 @@ async function readFunctionsErrorMessage(error, data) {
   return error?.message || 'Failed to resolve download.';
 }
 
+function normalizeDownloadResponse(data) {
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+
+  return {
+    signedUrl: data.signedUrl ?? data.signed_url,
+    expiresAt: data.expiresAt ?? data.expires_at,
+    maxDownloads: data.maxDownloads ?? data.max_downloads,
+    downloadCount: data.downloadCount ?? data.download_count,
+    ebookTitle: data.ebookTitle ?? data.ebook_title ?? null,
+    ebookFormat: data.ebookFormat ?? data.ebook_format,
+    suggestedFileName: data.suggestedFileName ?? data.suggested_file_name,
+    campaignId: data.campaignId ?? data.campaign_id ?? null,
+    ebookId: data.ebookId ?? data.ebook_id ?? null,
+    coverSignedUrl: data.coverSignedUrl ?? data.cover_signed_url ?? null,
+    coverPublicUrl: data.coverPublicUrl ?? data.cover_public_url ?? null,
+    coverImagePath: data.coverImagePath ?? data.cover_image_path ?? null
+  };
+}
+
+/** Client fallback when the Edge Function is not yet returning cover fields. */
+export async function fetchCoverPathForCampaign(campaignId) {
+  if (!campaignId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('ebooks')
+    .select('cover_image_path')
+    .eq('campaign_id', campaignId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error || !data?.length) {
+    return null;
+  }
+
+  for (const row of data) {
+    const p = row.cover_image_path?.trim?.();
+    if (p) {
+      return p;
+    }
+  }
+
+  return null;
+}
+
 export async function resolveDownload(token) {
   const { data, error } = await supabase.functions.invoke('resolve-download', {
     body: { token }
@@ -80,9 +128,9 @@ export async function resolveDownload(token) {
     throw new Error(await readFunctionsErrorMessage(error, data));
   }
 
-  if (!data?.signedUrl) {
+  if (!data?.signedUrl && !data?.signed_url) {
     throw new Error(data?.error || 'Failed to prepare your download.');
   }
 
-  return data;
+  return normalizeDownloadResponse(data);
 }

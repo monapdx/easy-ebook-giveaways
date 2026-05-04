@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { resolveDownload } from '../services/downloadService';
+import { fetchCoverPathForCampaign, resolveDownload } from '../services/downloadService';
 import { getEbookCoverPublicUrl } from '../../ebooks/services/ebookService';
 import SiteFooter from '../../../components/layout/SiteFooter';
 import Card from '../../../components/ui/Card';
@@ -10,6 +10,10 @@ const DEFAULT_COVER = 'https://placehold.co/280x420/1f2430/a8b0bf?text=Ebook';
 function resolveCoverSrc(meta) {
   if (!meta) {
     return DEFAULT_COVER;
+  }
+  const signed = meta.coverSignedUrl || meta.cover_signed_url;
+  if (signed) {
+    return signed;
   }
   const fromServer = meta.coverPublicUrl || meta.cover_public_url;
   if (fromServer) {
@@ -57,6 +61,36 @@ export default function DownloadPage() {
       isMounted = false;
     };
   }, [token]);
+
+  useEffect(() => {
+    if (loading || error || !downloadMeta) {
+      return undefined;
+    }
+
+    const cid = downloadMeta.campaignId;
+    const hasCover =
+      downloadMeta.coverSignedUrl ||
+      downloadMeta.coverPublicUrl ||
+      downloadMeta.coverImagePath;
+
+    if (!cid || hasCover) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const path = await fetchCoverPathForCampaign(cid);
+      if (cancelled || !path) {
+        return;
+      }
+      setDownloadMeta((prev) => (prev ? { ...prev, coverImagePath: path } : prev));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, error, downloadMeta]);
 
   const displayTitle = downloadMeta?.ebookTitle?.trim() || 'Your ebook';
   const coverSrc = resolveCoverSrc(downloadMeta);
