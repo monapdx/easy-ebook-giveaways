@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import Button from '../../components/ui/Button';
 import SiteFooter from '../../components/layout/SiteFooter';
+import { APP_BASE } from '../paths';
 
 export default function DashboardLayout() {
   const [session, setSession] = useState(null);
@@ -37,14 +38,16 @@ export default function DashboardLayout() {
   return (
     <div className="dashboard-shell">
       <aside className="sidebar">
-        <Link to="/" className="brand">
-          BookGiveaway
+        <Link to={APP_BASE} className="brand">
+          Easy eBook Giveaways
         </Link>
 
         <nav className="sidebar-nav">
-          <NavLink to="/">Dashboard</NavLink>
-          <NavLink to="/campaigns">Campaigns</NavLink>
-          <NavLink to="/campaigns/new">New Campaign</NavLink>
+          <NavLink to={APP_BASE} end>
+            Dashboard
+          </NavLink>
+          <NavLink to={`${APP_BASE}/campaigns`}>Campaigns</NavLink>
+          <NavLink to={`${APP_BASE}/campaigns/new`}>New Campaign</NavLink>
         </nav>
 
         <div className="stack sidebar-account">

@@ -1,11 +1,14 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
 import PublicLayout from './layouts/PublicLayout';
+import MarketingLayout from './layouts/MarketingLayout';
 
 import LoginPage from '../features/auth/pages/LoginPage';
 import SignupPage from '../features/auth/pages/SignupPage';
 import AuthGuard from '../features/auth/components/AuthGuard';
 
+import MarketingHomePage from '../features/marketing/pages/MarketingHomePage';
+import LegacyAppPathRedirect from './LegacyAppPathRedirect';
 import DashboardHomePage from '../features/dashboard/pages/DashboardHomePage';
 import CampaignListPage from '../features/campaigns/pages/CampaignListPage';
 import CampaignCreatePage from '../features/campaigns/pages/CampaignCreatePage';
@@ -26,8 +29,14 @@ export function AppRouter() {
         <Route path="/register" element={<SignupPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
+        <Route path="/" element={<MarketingLayout />}>
+          <Route index element={<MarketingHomePage />} />
+        </Route>
+
+        <Route path="/campaigns/*" element={<LegacyAppPathRedirect />} />
+
         <Route
-          path="/"
+          path="/app"
           element={
             <AuthGuard>
               <DashboardLayout />

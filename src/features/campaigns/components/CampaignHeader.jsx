@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { APP_BASE } from '../../../app/paths';
 import Button from '../../../components/ui/Button';
 
 export default function CampaignHeader({ campaign }) {
@@ -10,13 +11,13 @@ export default function CampaignHeader({ campaign }) {
       </div>
 
       <div className="row">
-        <Link to={`/campaigns/${campaign.id}/design`}>
+        <Link to={`${APP_BASE}/campaigns/${campaign.id}/design`}>
           <Button variant="secondary">Design</Button>
         </Link>
-        <Link to={`/campaigns/${campaign.id}/entries`}>
+        <Link to={`${APP_BASE}/campaigns/${campaign.id}/entries`}>
           <Button variant="secondary">Entries</Button>
         </Link>
-        <Link to={`/campaigns/${campaign.id}/analytics`}>
+        <Link to={`${APP_BASE}/campaigns/${campaign.id}/analytics`}>
           <Button>Analytics</Button>
         </Link>
       </div>

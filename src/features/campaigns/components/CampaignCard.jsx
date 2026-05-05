@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { APP_BASE } from '../../../app/paths';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 
@@ -36,7 +37,7 @@ export default function CampaignCard({ campaign, isDeleting = false, onDelete })
         </div>
 
         <div className="row">
-          <Link to={`/campaigns/${campaign.id}`}>
+          <Link to={`${APP_BASE}/campaigns/${campaign.id}`}>
             <Button>Manage</Button>
           </Link>
           <Link to={`/g/${campaign.slug}`}>

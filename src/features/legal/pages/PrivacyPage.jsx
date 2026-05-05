@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
+import { APP_BASE } from '../../../app/paths';
 
 export default function PrivacyPage() {
   return (
@@ -173,7 +174,7 @@ export default function PrivacyPage() {
           <p className="muted" style={{ marginBottom: 0 }}>
             <Link to="/login">Sign in</Link>
             {' · '}
-            <Link to="/">Dashboard</Link>
+            <Link to={APP_BASE}>Dashboard</Link>
           </p>
         </article>
       </Card>
