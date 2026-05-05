@@ -10,7 +10,7 @@
 
 [![Author Dashboard](https://img.shields.io/badge/%F0%9F%91%89Author%20Dashboard-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/author-dashboard.png) [![Campaigns](https://img.shields.io/badge/%F0%9F%93%A3Campaigns-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/campaigns.png) [![New Campaign](https://img.shields.io/badge/%E2%AD%90New%20Campaign-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/new-campaign.png) [![Giveaway](https://img.shields.io/badge/%F0%9F%8E%89Giveaway-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/giveaway.png) [![Landing Page](https://img.shields.io/badge/%F0%9F%94%8DLanding%20Page-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/landing-page.png)
 
-<img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/landing-page.png">
+<img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/home-above-fold.png">
 
 ## Diagrams
 
