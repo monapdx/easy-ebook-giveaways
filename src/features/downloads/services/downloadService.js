@@ -1,5 +1,7 @@
 import { supabase } from '../../../lib/supabaseClient';
 
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 function generateTokenString() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -51,20 +53,47 @@ export async function createDownloadToken({ campaignId, entryId }) {
   return data.token;
 }
 
+/**
+ * Supabase throws FunctionsHttpError with message "Edge Function returned a non-2xx status code"
+ * while the JSON body lives on error.context (Response). Parse it so users see the real reason.
+ */
 async function readFunctionsErrorMessage(error, data) {
   if (data && typeof data === 'object' && 'error' in data && data.error) {
     return String(data.error);
   }
 
   const ctx = error?.context;
-  if (ctx && typeof ctx.json === 'function') {
+  if (ctx && typeof ctx.clone === 'function') {
+    const status = typeof ctx.status === 'number' ? ctx.status : '';
+    const statusBit = status ? ` (HTTP ${status})` : '';
+
     try {
-      const body = await ctx.clone().json();
-      if (body?.error) {
-        return String(body.error);
+      const clone = ctx.clone();
+      const ct = clone.headers?.get?.('Content-Type') ?? '';
+      if (ct.includes('application/json')) {
+        const body = await clone.json();
+        if (body?.error) {
+          return `${String(body.error)}${statusBit}`;
+        }
+      } else {
+        const text = (await clone.text()).trim();
+        if (text) {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed?.error) {
+              return `${String(parsed.error)}${statusBit}`;
+            }
+          } catch {
+            return `${text.slice(0, 500)}${statusBit}`;
+          }
+        }
       }
     } catch {
       /* ignore */
+    }
+
+    if (status) {
+      return `${error?.message || 'Failed to resolve download.'}${statusBit}`;
     }
   }
 
@@ -120,8 +149,29 @@ export async function fetchCoverPathForCampaign(campaignId) {
 }
 
 export async function resolveDownload(token) {
+  const raw = typeof token === 'string' ? token.trim() : token;
+  let normalized = raw;
+  if (typeof raw === 'string' && raw.includes('%')) {
+    try {
+      normalized = decodeURIComponent(raw);
+    } catch {
+      normalized = raw;
+    }
+  }
+
+  /**
+   * Public download links must work for everyone. Logged-in authors can have an expired
+   * session JWT; the shared client would send that to Edge Functions and the gateway may
+   * reject the call before resolve-download runs. Force the anon key like an anonymous reader.
+   */
   const { data, error } = await supabase.functions.invoke('resolve-download', {
-    body: { token }
+    body: { token: normalized },
+    headers:
+      anonKey != null && anonKey !== ''
+        ? {
+            Authorization: `Bearer ${anonKey}`
+          }
+        : undefined
   });
 
   if (error) {
