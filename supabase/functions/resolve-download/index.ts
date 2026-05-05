@@ -32,64 +32,58 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: tokenRecord, error: tokenError } = await supabaseAdmin
-      .from('download_tokens')
-      .select('id, ebook_id, expires_at, max_downloads, download_count')
-      .eq('token', token)
-      .maybeSingle();
+    // Single atomic increment (avoids 409 races from concurrent callers, e.g. React StrictMode).
+    const { data: claimedRows, error: claimError } = await supabaseAdmin.rpc('claim_download_resolution', {
+      token_param: token
+    });
 
-    if (tokenError) {
-      throw tokenError;
+    if (claimError) {
+      throw claimError;
     }
 
-    if (!tokenRecord) {
-      return new Response(JSON.stringify({ error: 'Invalid download token.' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
+    const claimed = Array.isArray(claimedRows)
+      ? claimedRows[0]
+      : claimedRows && typeof claimedRows === 'object'
+        ? claimedRows
+        : null;
+    let updatedRecord: {
+      id: string;
+      ebook_id: string;
+      expires_at: string;
+      max_downloads: number;
+      download_count: number;
+    } | null = claimed ?? null;
 
-    const expiresAt = new Date(tokenRecord.expires_at);
-    const now = new Date();
+    if (!updatedRecord) {
+      const { data: tokenRow, error: diagError } = await supabaseAdmin
+        .from('download_tokens')
+        .select('expires_at, download_count, max_downloads')
+        .eq('token', token)
+        .maybeSingle();
 
-    if (expiresAt < now) {
-      return new Response(JSON.stringify({ error: 'This download link has expired.' }), {
-        status: 410,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
+      if (diagError) {
+        throw diagError;
+      }
 
-    if (tokenRecord.download_count >= tokenRecord.max_downloads) {
+      if (!tokenRow) {
+        return new Response(JSON.stringify({ error: 'Invalid download token.' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const expiresAt = new Date(tokenRow.expires_at as string);
+      if (expiresAt < new Date()) {
+        return new Response(JSON.stringify({ error: 'This download link has expired.' }), {
+          status: 410,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       return new Response(
         JSON.stringify({ error: 'This download link has reached its download limit.' }),
         {
           status: 410,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const nextDownloadCount = tokenRecord.download_count + 1;
-
-    const { data: updatedRecord, error: updateError } = await supabaseAdmin
-      .from('download_tokens')
-      .update({ download_count: nextDownloadCount })
-      .eq('id', tokenRecord.id)
-      .eq('download_count', tokenRecord.download_count)
-      .select('id, ebook_id, expires_at, max_downloads, download_count')
-      .maybeSingle();
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    if (!updatedRecord) {
-      return new Response(
-        JSON.stringify({
-          error: 'Download token was updated by another request. Please try again.'
-        }),
-        {
-          status: 409,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
