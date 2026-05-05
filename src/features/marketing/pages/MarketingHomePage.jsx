@@ -2,46 +2,7 @@ import { Link } from 'react-router-dom';
 import { APP_BASE } from '../../../app/paths';
 import '../../../styles/marketing-landing.css';
 
-function IconBook() {
-  return (
-    <svg className="marketing-icon" width="40" height="40" viewBox="0 0 40 40" aria-hidden>
-      <rect x="8" y="6" width="20" height="28" rx="2" fill="currentColor" opacity="0.2" />
-      <path
-        d="M12 8h14a2 2 0 012 2v22H14a2 2 0 00-2-2V8z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path d="M16 14h10M16 18h10M16 22h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconMail() {
-  return (
-    <svg className="marketing-icon" width="40" height="40" viewBox="0 0 40 40" aria-hidden>
-      <rect x="6" y="10" width="28" height="20" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6 12l14 10L34 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconDownload() {
-  return (
-    <svg className="marketing-icon" width="40" height="40" viewBox="0 0 40 40" aria-hidden>
-      <path
-        d="M20 6v18m0 0l-6-6m6 6l6-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M10 28h20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M8 32h24" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
-    </svg>
-  );
-}
+const HOMEPAGE_PROMO_SRC = `${import.meta.env.BASE_URL}homepage-promo.png`;
 
 function IconSpark() {
   return (
@@ -168,23 +129,17 @@ export default function MarketingHomePage() {
                 Free to try · Built for indie energy, not enterprise jargon
               </p>
             </div>
-            <div className="marketing-hero__art" aria-hidden>
-              <div className="marketing-hero__float marketing-hero__float--book">
-                <IconBook />
-              </div>
-              <div className="marketing-hero__float marketing-hero__float--mail">
-                <IconMail />
-              </div>
-              <div className="marketing-hero__float marketing-hero__float--dl">
-                <IconDownload />
-              </div>
-              <div className="marketing-hero__card">
-                <span className="marketing-pill">Your giveaway</span>
-                <p className="marketing-hero__card-title">The Night Garden</p>
-                <p className="marketing-hero__card-meta muted">12 signups · PDF ready</p>
-                <div className="marketing-hero__card-bar" />
-              </div>
-            </div>
+            <figure className="marketing-hero__art">
+              <img
+                className="marketing-hero__promo"
+                src={HOMEPAGE_PROMO_SRC}
+                width={760}
+                height={560}
+                alt="Giveaway page, email signup, and secure ebook download in one flow."
+                loading="eager"
+                decoding="async"
+              />
+            </figure>
           </div>
         </section>
 

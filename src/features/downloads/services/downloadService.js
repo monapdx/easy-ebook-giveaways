@@ -1,6 +1,7 @@
 import { supabase } from '../../../lib/supabaseClient';
 
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '') ?? '';
 
 function generateTokenString() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -51,53 +52,6 @@ export async function createDownloadToken({ campaignId, entryId }) {
   }
 
   return data.token;
-}
-
-/**
- * Supabase throws FunctionsHttpError with message "Edge Function returned a non-2xx status code"
- * while the JSON body lives on error.context (Response). Parse it so users see the real reason.
- */
-async function readFunctionsErrorMessage(error, data) {
-  if (data && typeof data === 'object' && 'error' in data && data.error) {
-    return String(data.error);
-  }
-
-  const ctx = error?.context;
-  if (ctx && typeof ctx.clone === 'function') {
-    const status = typeof ctx.status === 'number' ? ctx.status : '';
-    const statusBit = status ? ` (HTTP ${status})` : '';
-
-    try {
-      const clone = ctx.clone();
-      const ct = clone.headers?.get?.('Content-Type') ?? '';
-      if (ct.includes('application/json')) {
-        const body = await clone.json();
-        if (body?.error) {
-          return `${String(body.error)}${statusBit}`;
-        }
-      } else {
-        const text = (await clone.text()).trim();
-        if (text) {
-          try {
-            const parsed = JSON.parse(text);
-            if (parsed?.error) {
-              return `${String(parsed.error)}${statusBit}`;
-            }
-          } catch {
-            return `${text.slice(0, 500)}${statusBit}`;
-          }
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-
-    if (status) {
-      return `${error?.message || 'Failed to resolve download.'}${statusBit}`;
-    }
-  }
-
-  return error?.message || 'Failed to resolve download.';
 }
 
 function normalizeDownloadResponse(data) {
@@ -159,27 +113,56 @@ export async function resolveDownload(token) {
     }
   }
 
-  /**
-   * Public download links must work for everyone. Logged-in authors can have an expired
-   * session JWT; the shared client would send that to Edge Functions and the gateway may
-   * reject the call before resolve-download runs. Force the anon key like an anonymous reader.
-   */
-  const { data, error } = await supabase.functions.invoke('resolve-download', {
-    body: { token: normalized },
-    headers:
-      anonKey != null && anonKey !== ''
-        ? {
-            Authorization: `Bearer ${anonKey}`
-          }
-        : undefined
-  });
-
-  if (error) {
-    throw new Error(await readFunctionsErrorMessage(error, data));
+  if (!supabaseUrl || !anonKey) {
+    throw new Error('Missing Supabase URL or anon key (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).');
   }
 
-  if (!data?.signedUrl && !data?.signed_url) {
-    throw new Error(data?.error || 'Failed to prepare your download.');
+  /**
+   * Call the Edge Function with plain fetch + anon JWT for both Authorization and apikey.
+   * `supabase.functions.invoke` goes through the client fetch layer, which can still attach a
+   * user session in some environments (e.g. in-app browsers from mail clients) and produce HTTP 401.
+   */
+  const res = await fetch(`${supabaseUrl}/functions/v1/resolve-download`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`
+    },
+    body: JSON.stringify({ token: normalized })
+  });
+
+  const ct = res.headers.get('Content-Type') ?? '';
+  let payload = null;
+  try {
+    payload = ct.includes('application/json') ? await res.json() : await res.text();
+  } catch {
+    payload = null;
+  }
+
+  if (!res.ok) {
+    const statusBit = ` (HTTP ${res.status})`;
+    let msg = `Failed to resolve download${statusBit}`;
+    if (payload && typeof payload === 'object' && payload.error) {
+      msg = `${String(payload.error)}${statusBit}`;
+    } else if (typeof payload === 'string' && payload.trim()) {
+      try {
+        const parsed = JSON.parse(payload);
+        if (parsed?.error) {
+          msg = `${String(parsed.error)}${statusBit}`;
+        } else {
+          msg = `${payload.trim().slice(0, 400)}${statusBit}`;
+        }
+      } catch {
+        msg = `${payload.trim().slice(0, 400)}${statusBit}`;
+      }
+    }
+    throw new Error(msg);
+  }
+
+  const data = payload && typeof payload === 'object' ? payload : {};
+  if (!data.signedUrl && !data.signed_url) {
+    throw new Error(data.error || 'Failed to prepare your download.');
   }
 
   return normalizeDownloadResponse(data);
