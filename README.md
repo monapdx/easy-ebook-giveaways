@@ -1,22 +1,40 @@
 # 📚 Ebook Giveaway App
 
-[![Giveaway](https://img.shields.io/badge/%E2%9C%A8Giveaway-111111?style=for-the-badge)](https://monapdx.github.io/easy-ebook-giveaways/g/free-ebook-giveaway) [![Login](https://img.shields.io/badge/%F0%9F%93%8CLogin-111111?style=for-the-badge)](https://monapdx.github.io/easy-ebook-giveaways/login) [![Dashboard](https://img.shields.io/badge/%F0%9F%9A%80Dashboard-111111?style=for-the-badge)](https://monapdx.github.io/easy-ebook-giveaways/) 
+[![Giveaway](https://img.shields.io/badge/%E2%9C%A8Giveaway-111111?style=for-the-badge)](https://easyebookgiveaways.com/#/g/free-ebook-giveaway) [![Login](https://img.shields.io/badge/%F0%9F%93%8CLogin-111111?style=for-the-badge)](https://easyebookgiveaways.com/#/login) [![Dashboard](https://img.shields.io/badge/%F0%9F%9A%80Dashboard-111111?style=for-the-badge)](https://easyebookgiveaways.com/#/app)
 
 | Logo | Description |
 |---|---|
-| <img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/logo.png" width="354"> | This document captures the major milestones and technical progress made while building the Ebook Giveaway App — a platform for self-published authors to create, host, and deliver free ebook giveaways without relying on third-party email marketing tools. |
+| <img src="./logo.png" width="354" alt="Ebook Giveaway App logo"> | This document captures the major milestones and technical progress made while building the Ebook Giveaway App — a platform for self-published authors to create, host, and deliver free ebook giveaways without relying on third-party email marketing tools. |
+
+## Live site, hosting, and routing
+
+* **Production:** [easyebookgiveaways.com](https://easyebookgiveaways.com/) (GitHub Pages; `public/CNAME`).
+* **Alternate URL:** `https://monapdx.github.io/easy-ebook-giveaways/` may redirect to the apex domain; GitHub Pages “project URL only” builds need `VITE_BASE_PATH` set to `/easy-ebook-giveaways/` (see `vite.config.js` and `.github/workflows/deploy.yml`).
+* **Client routing:** The app uses **React Router with `HashRouter`**. Deep links must include the hash, for example `https://easyebookgiveaways.com/#/login`, not `/login` (static hosting has no server fallback for non-hash paths).
+* **Marketing home** loads at `#/` (pathname `/` inside the hash router). The **author dashboard** lives under `#/app` (not at the site root).
+* **Legacy paths:** Old bookmarks like `/#/campaigns/...` are redirected to `#/app/campaigns/...` via `LegacyAppPathRedirect`.
 
 ## Screenshots
 
-[![Author Dashboard](https://img.shields.io/badge/%F0%9F%91%89Author%20Dashboard-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/author-dashboard.png) [![Campaigns](https://img.shields.io/badge/%F0%9F%93%A3Campaigns-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/campaigns.png) [![New Campaign](https://img.shields.io/badge/%E2%AD%90New%20Campaign-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/new-campaign.png) [![Giveaway](https://img.shields.io/badge/%F0%9F%8E%89Giveaway-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/giveaway.png) [![Landing Page](https://img.shields.io/badge/%F0%9F%94%8DLanding%20Page-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/landing-page.png)
+[![Author Dashboard](https://img.shields.io/badge/%F0%9F%91%89Author%20Dashboard-111111?style=for-the-badge)](./author-dashboard.png) [![Campaigns](https://img.shields.io/badge/%F0%9F%93%A3Campaigns-111111?style=for-the-badge)](./campaigns.png) [![New Campaign](https://img.shields.io/badge/%E2%AD%90New%20Campaign-111111?style=for-the-badge)](./new-campaign.png) [![Giveaway](https://img.shields.io/badge/%F0%9F%8E%89Giveaway-111111?style=for-the-badge)](./giveaway.png) [![Landing Page](https://img.shields.io/badge/%F0%9F%94%8DLanding%20Page-111111?style=for-the-badge)](./landing-page.png)
 
-<img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/home-above-fold.png">
+<img src="./home-above-fold.png" alt="Homepage above the fold">
 
 ## Diagrams
 
-[![Author Journey](https://img.shields.io/badge/%F0%9F%93%9DAuthor%20Journey-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/author-journey.png) [![Reader Journey](https://img.shields.io/badge/%F0%9F%93%96Reader%20Journey-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/reader-journey.png) [![Token Validation](https://img.shields.io/badge/%F0%9F%AA%99Token%20Validation-111111?style=for-the-badge)](https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/token-validation-flow.png)
+[![Author Journey](https://img.shields.io/badge/%F0%9F%93%9DAuthor%20Journey-111111?style=for-the-badge)](./author-journey.png) [![Reader Journey](https://img.shields.io/badge/%F0%9F%93%96Reader%20Journey-111111?style=for-the-badge)](./reader-journey.png) [![Token Validation](https://img.shields.io/badge/%F0%9F%AA%99Token%20Validation-111111?style=for-the-badge)](./token-validation-flow.png)
 
-<img src="https://raw.githubusercontent.com/monapdx/easy-ebook-giveaways/refs/heads/main/diagram.png">
+<img src="./diagram.png" alt="System diagram">
+
+---
+
+## Local development
+
+* **Node:** 20.x (matches CI).
+* **Install:** `npm ci` or `npm install`
+* **Dev server:** `npm run dev`
+* **Env:** set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Supabase project (Vite exposes `import.meta.env.*`).
+* **Production build:** `npm run build` — optional `VITE_BASE_PATH` for subdirectory deploys; the build script copies `dist/index.html` to `dist/404.html` for GitHub Pages.
 
 ---
 
@@ -26,20 +44,16 @@
 
 * Created app using React + Vite
 * Organized project into modular feature-based architecture
-* Implemented routing with React Router
+* Implemented routing with React Router (**`HashRouter`** in `src/app/router.jsx`)
 
 ### ✅ UI Structure
 
-* Built reusable UI components:
-
-  * Button
-  * Input
-  * Card
-  * SectionHeader
+* Built reusable UI components (including Button, Input, Card, SectionHeader, Textarea, EmptyState)
 * Established layout system:
 
-  * Dashboard layout (authenticated)
-  * Public layout (landing pages)
+  * **Marketing layout** — public homepage at `#/`
+  * **Dashboard layout** — authenticated author app under `#/app`
+  * **Public layout** — giveaway and legal pages
 
 ---
 
@@ -49,19 +63,19 @@
 
 * Created Supabase project
 * Added environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
-* Initialized client (`supabaseClient.js`)
+* Initialized client (`src/lib/supabaseClient.js`)
 
 ### ✅ Auth System
 
-* Signup + Login flows implemented
-* Session handling via `useAuth` logic
-* Auth state reflected in UI (Dashboard sidebar)
+* **Login** (`#/login`), **register** (`#/register` and `#/signup`, same screen)
+* Session handling via `useAuth` / Supabase session listeners
+* After login, navigation to the prior protected route or `#/app` (`AuthForm`)
 
 ### ✅ Route Protection
 
 * Created `AuthGuard`
-* Protected dashboard routes
-* Redirects unauthenticated users to `/login`
+* Protected dashboard routes under `#/app`
+* Redirects unauthenticated users to `/login` (hash route: `#/login`)
 
 ---
 
@@ -101,6 +115,7 @@
 * Form to create campaigns
 * Stored in Supabase
 * Auto-generated or user-defined slug
+* New rows are created with `status: 'published'` by default (`createCampaign`); there is no separate draft toggle in the dashboard yet
 
 ### ✅ Campaign Listing
 
@@ -111,6 +126,7 @@
 
 * View campaign details
 * Added section for ebook upload
+* **Delete campaign** is implemented in `campaignService` (storage cleanup for ebook files/covers)
 
 ---
 
@@ -118,7 +134,7 @@
 
 ### ✅ Dynamic Routing
 
-* Public route: `/g/:slug`
+* Public route: `#/g/:slug`
 
 ### ✅ Real Data Fetching
 
@@ -160,6 +176,7 @@
 
 * Ebook upload form tied to campaign
 * Ebook stored per campaign
+* Optional ebook cover upload and public URL handling for giveaway/download UI
 
 ---
 
@@ -187,7 +204,7 @@
 
 * User submits entry
 * Token created automatically
-* Redirect to `/download/:token`
+* Redirect to `#/download/:token`
 
 ---
 
@@ -212,7 +229,7 @@
 
 ### ✅ Download page UX
 
-* Readers are still redirected to `/download/:token` so they can download immediately even if email is delayed
+* Readers are still redirected to `#/download/:token` so they can download immediately even if email is delayed
 
 ---
 
@@ -238,21 +255,21 @@
 
 The app now supports:
 
-* Author authentication
+* Author authentication (login + register)
 * Campaign creation and management
-* Campaign-level dashboard with overview stats
-* Campaign design editing + preview (`/campaigns/:campaignId/design`)
-* Campaign entries management (`/campaigns/:campaignId/entries`)
-* Campaign analytics summary cards (`/campaigns/:campaignId/analytics`)
-* Public giveaway pages
-* Success route for giveaway submissions (`/g/:slug/success`)
+* Campaign-level dashboard with overview stats (`#/app`, `#/app/campaigns`, `#/app/campaigns/:campaignId`)
+* Campaign design editing + preview (`#/app/campaigns/:campaignId/design`) — **Save** updates in-session preview; persistence to the DB for landing fields is still a roadmap item (see Next Steps)
+* Campaign entries management (`#/app/campaigns/:campaignId/entries`)
+* Campaign analytics summary cards (`#/app/campaigns/:campaignId/analytics`)
+* Public giveaway pages (`#/g/:slug`)
+* Success route for giveaway submissions (`#/g/:slug/success`)
 * Ebook upload and storage
 * Optional ebook cover upload and rendering on giveaway/download pages
 * Entry collection
 * Token-based gated downloads
 * Download tracking and limits
 * Download link emails via Edge Functions (DB-backed recipient lookup)
-* Privacy route (`/privacy`) in public layout
+* Privacy route (`#/privacy`) in public layout
 
 ---
 
@@ -271,19 +288,27 @@ User → visits page → submits form → redirect to download + optional email 
 
 ### High Priority
 
-* Run all latest Supabase migrations in order (entries consent, email tracking, cover image, public read policy, MIME-type fixes)
+* Run Supabase migrations in timestamp order under `supabase/migrations/`:
+
+  * `20260426140000_download_tokens_email_tracking.sql`
+  * `20260426150000_entries_consent_author_contact.sql`
+  * `20260503120000_ebook_cover_image.sql`
+  * `20260503121000_public_read_published_campaigns_ebooks.sql`
+  * `20260504120000_fix_ebook_covers_mime_types.sql`
+  * `20260504190000_claim_download_resolution.sql`
+
 * Configure Edge Function secrets: provider API key/sender values, `PUBLIC_SITE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 * Keep email sender/domain settings aligned with your current transactional email provider
 
 ### Medium Priority
 
 * 🔁 Replace/overwrite ebook functionality (currently uploads latest file and reads latest attached ebook)
-* 🚦 Publish / Unpublish controls in dashboard UI (public read policy exists, author-facing toggle UX still pending)
+* 🚦 Author-facing **draft / publish** controls (campaigns default to published today; public read policy exists in migrations)
 * 📤 CSV export for entries
 
 ### UX Improvements
 
-* ✍️ Persist design-form edits directly to DB (current design editor updates preview in-session)
+* ✍️ Persist design-form edits directly to DB (design page currently drives preview via in-memory `savedLanding` in `CampaignDesignPage`)
 * 🎨 Continue polish for public giveaway and download page variants
 * 🧾 Add richer confirmation messaging around email send status on submit
 
